@@ -1,0 +1,1038 @@
+# =====================================================================
+# process_templates.yaml  --  Cleanroom LCA step-template library  (v0.1)
+# ---------------------------------------------------------------------
+# ONE file = the whole library. Each entry under `templates:` is a
+# reusable process-step TYPE. The assembler reads a run-sheet row
+# (step_type + parameter values), looks up the matching template here,
+# evaluates each flow's `amount` formula with those parameter values,
+# and emits a Brightway foreground activity whose exchanges are already
+# linked (via the `links:` catalog) to the frozen local ecoinvent /
+# missing_v3_parameters proxies / biosphere3.
+#
+# What the ASSEMBLER adds automatically (NOT stored in a template,
+# because templates are context-free):
+#   * the production exchange (amount = 1, one wafer);
+#   * the predecessor link (technosphere, amount = 1) wiring step N to
+#     step N-1 in the run sheet.
+#
+# Basis: one 150 mm wafer. Each flow declares scaling: per_wafer (default),
+# only the shared chamber-/bath-level flows (see `batchable` + per-flow
+# formulas), matching the batch-sharing rule used in the paper.
+#
+# Defaults reproduce the measured values from the noted source step;
+# a lab overrides the parameters for its own tools/recipes.
+# =====================================================================
+
+version: 0.1
+functional_basis: "one 150 mm wafer (single-wafer basis)"
+
+# ---------------------------------------------------------------------
+# Uncertainty presets (two-tier lognormal scheme; scale = sigma of ln).
+# Brightway 'uncertainty type' 2 = lognormal.
+# ---------------------------------------------------------------------
+uncertainty_presets:
+  primary_liquid:       {type: lognormal, scale: 0.060}
+  primary_electricity:  {type: lognormal, scale: 0.090}
+  primary_gas_in:       {type: lognormal, scale: 0.120}
+  primary_gas_emission: {type: lognormal, scale: 0.160}
+  flat_tech:            {type: lognormal, scale: 0.136382}
+  flat_bio:             {type: lognormal, scale: 0.173205}
+  solvent_tech:         {type: lognormal, scale: 0.034641}
+  solvent_bio:          {type: lognormal, scale: 0.114891}
+
+# ---------------------------------------------------------------------
+# Densities (kg/L) for VOLUME-input liquids. Lab recipes are written in
+# mL/L, so liquid amount expressions read e.g. "ipa_mL * rho['ipa'] / 1000".
+# Water and aqueous baths are ~1.0, so their mL <-> g is 1:1.
+# ---------------------------------------------------------------------
+densities:
+  water:     1.00     # DI water, rinse tanks
+  developer: 1.00     # aqueous developers / TMAH solutions
+  ipa:       0.786
+  acetone:   0.784
+  h2so4:     1.84     # concentrated sulfuric acid
+  h2o2:      1.20     # 50% hydrogen peroxide
+  hf:        1.15     # 49% hydrofluoric acid
+  slurry:    1.20     # colloidal silica/alumina CMP slurry
+
+# ---------------------------------------------------------------------
+# Link catalog: named pointers to background (ecoinvent), proxy
+# (missing_v3_parameters, RREM-built, location-generic) and biosphere
+# targets. Templates reference these by KEY, so an ecoinvent rename is
+# fixed in ONE place. This catalog IS the "linking layer".
+# ---------------------------------------------------------------------
+links:
+  elec:                 {database: ecoinvent-3.12-cutoff, name: "market for electricity, medium voltage", location: CH, reference_product: "electricity, medium voltage"}
+  # --- regional grids: the run-level `grid` setting swaps EVERY electricity flow to one of
+  # these. Grid choice is the single biggest lever in a cleanroom line (same TASE line:
+  # 979 kg CO2-eq on DE vs 1408 on TW -- a 1.44x swing). ---
+  elec_CH:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, medium voltage", location: CH, reference_product: "electricity, medium voltage"}
+  elec_DE:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, medium voltage", location: DE, reference_product: "electricity, medium voltage"}
+  elec_FR:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, medium voltage", location: FR, reference_product: "electricity, medium voltage"}
+  elec_IT:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, medium voltage", location: IT, reference_product: "electricity, medium voltage"}
+  elec_NL:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, medium voltage", location: NL, reference_product: "electricity, medium voltage"}
+  elec_JP:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, medium voltage", location: JP, reference_product: "electricity, medium voltage"}
+  elec_KR:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, medium voltage", location: KR, reference_product: "electricity, medium voltage"}
+  elec_TW:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, medium voltage", location: TW, reference_product: "electricity, medium voltage"}
+  elec_CN:  {database: ecoinvent-3.12-cutoff, name: "market group for electricity, medium voltage", location: CN, reference_product: "electricity, medium voltage"}
+  elec_US:  {database: ecoinvent-3.12-cutoff, name: "market group for electricity, medium voltage", location: US, reference_product: "electricity, medium voltage"}
+  elec_RER: {database: ecoinvent-3.12-cutoff, name: "market group for electricity, medium voltage", location: RER, reference_product: "electricity, medium voltage"}
+  # --- HIGH-VOLTAGE variants: use when the fab is fed directly from the HV grid
+  # (e.g. the PSI cleanroom). ~12% lower than MV because the MV distribution
+  # network's losses and infrastructure are not incurred (CH: 0.01935 vs 0.02193 kg CO2-eq/kWh). ---
+  elec_CH_HV:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, high voltage", location: CH, reference_product: "electricity, high voltage"}
+  elec_DE_HV:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, high voltage", location: DE, reference_product: "electricity, high voltage"}
+  elec_FR_HV:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, high voltage", location: FR, reference_product: "electricity, high voltage"}
+  elec_IT_HV:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, high voltage", location: IT, reference_product: "electricity, high voltage"}
+  elec_NL_HV:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, high voltage", location: NL, reference_product: "electricity, high voltage"}
+  elec_JP_HV:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, high voltage", location: JP, reference_product: "electricity, high voltage"}
+  elec_KR_HV:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, high voltage", location: KR, reference_product: "electricity, high voltage"}
+  elec_TW_HV:  {database: ecoinvent-3.12-cutoff, name: "market for electricity, high voltage", location: TW, reference_product: "electricity, high voltage"}
+  elec_CN_HV:  {database: ecoinvent-3.12-cutoff, name: "market group for electricity, high voltage", location: CN, reference_product: "electricity, high voltage"}
+  elec_US_HV:  {database: ecoinvent-3.12-cutoff, name: "market group for electricity, high voltage", location: US, reference_product: "electricity, high voltage"}
+  elec_RER_HV: {database: ecoinvent-3.12-cutoff, name: "market group for electricity, high voltage", location: RER, reference_product: "electricity, high voltage"}
+  casting_solvent:      {database: ecoinvent-3.12-cutoff, name: "solvent production, organic"}
+  acetone:              {database: ecoinvent-3.12-cutoff, name: "market for acetone, liquid"}
+  ipa:                  {database: ecoinvent-3.12-cutoff, name: "isopropanol production"}
+  di_water:             {database: ecoinvent-3.12-cutoff, name: "water production, deionised"}
+  spent_solvent_tx:     {database: ecoinvent-3.12-cutoff, name: "treatment of spent solvent mixture, hazardous waste incineration"}
+  msw:                  {database: ecoinvent-3.12-cutoff, name: "market for municipal solid waste"}
+  textile_wipe:         {database: ecoinvent-3.12-cutoff, name: "textile production, nonwoven polyester, needle-punched"}
+  pe_wipe:              {database: ecoinvent-3.12-cutoff, name: "market for polyethylene, low density, fines"}
+  # RREM proxies (location-generic; the reusable proxy library)
+  csar_resist:          {database: Input Flows Collection, name: "CSAR 6200-13 photoresist production"}
+  ar600_546_dev:        {database: Input Flows Collection, name: "AR 600-546 developer production"}
+  n2_5n:                {database: Input Flows Collection, name: "Nitrogen gas 5N production"}
+  chf3_5n:              {database: Input Flows Collection, name: "trifluoromethane 5N production"}
+  ar_5n:                {database: Input Flows Collection, name: "Argon 5N.0, production"}
+  o2_5n:                {database: Input Flows Collection, name: "oxygen 5N.0, production"}
+  sih4_n2:              {database: Input Flows Collection, name: "SiH4/N2 gas mixture"}
+  p509:                 {database: Input Flows Collection, name: "P509 spin on dopant"}
+  soi_wafer:            {database: Input Flows Collection, name: "silicon on insulator wafer production"}
+  n2o_production:       {database: ecoinvent-3.12-cutoff, name: "nitrous oxide production"}
+  natural_gas:          {database: ecoinvent-3.12-cutoff, name: "market for natural gas, high pressure"}
+  neutralization_water: {database: Input Flows Collection, name: "Neutralization  water"}   # NB: double space in DB name
+  # --- resist / developer / strip proxies (referenced via the materials catalog) ---
+  hsq:               {database: Input Flows Collection, name: "Hydrogen silsesquioxane, production"}
+  s1813:             {database: Input Flows Collection, name: "Microposit S1813"}
+  az1512:            {database: Input Flows Collection,   name: "AZ 1512 photoresist production"}
+  # PMMA has no single formulated-resist proxy: the line models it as SOLIDS + casting
+  # solvent (steps 55/61/62 -> 0.00018 kg PMMA + 0.00282 kg solvent, i.e. ~6% solids).
+  # Use the resist_solids link here and set casting_solvent_g on the spin-coating step.
+  pmma:              {database: ecoinvent-3.12-cutoff, name: "market for polymethyl methacrylate", location: RER}
+  ar600_71_remover:  {database: Input Flows Collection, name: "AR 600-71 remover production"}
+  az351b_dev:        {database: Input Flows Collection, name: "AZ351B production"}
+  az400k_dev:        {database: Input Flows Collection,   name: "AZ 400K developer production"}
+  ar300_47_dev:      {database: Input Flows Collection,   name: "AR 300-47 developer production"}
+  tmah:              {database: Input Flows Collection, name: "TMAH 2% aqueous solution, production"}
+  # --- substrates (substrate_type choice -> see materials: substrates) ---
+  si_wafer:          {database: ecoinvent-3.12-cutoff,  name: "single-Si wafer production, for electronics", location: RER}
+  inp_wafer:         {database: Input Flows Collection,  name: "InP wafer production, for electronics"}
+  si_wafer_675:      {database: Input Flows Collection,  name: "single-Si wafer production, for electronics, 675 um"}
+  si_wafer_525:      {database: Input Flows Collection,  name: "single-Si wafer production, for electronics, 525 um"}
+  si_wafer_725:      {database: Input Flows Collection,  name: "single-Si wafer production, for electronics, 725 um"}
+  si_wafer_775:      {database: Input Flows Collection,  name: "single-Si wafer production, for electronics, 775 um"}
+  inp_wafer_350:     {database: Input Flows Collection,  name: "InP wafer production, for electronics, 350 um"}
+  inp_wafer_675:     {database: Input Flows Collection,  name: "InP wafer production, for electronics, 675 um"}
+  ge_wafer:          {database: Input Flows Collection,  name: "Germanium wafer, for electronics"}
+  bf3:               {database: ecoinvent-3.12-cutoff,  name: "market for boron trifluoride"}
+  p_white:           {database: ecoinvent-3.12-cutoff,  name: "market for phosphorus, white, liquid"}
+  arsine:            {database: ecoinvent-3.12-cutoff,  name: "market for arsine"}
+  graphite:          {database: ecoinvent-3.12-cutoff,  name: "market for graphite"}
+  bcb_adhesive:      {database: ecoinvent-3.12-cutoff,  name: "bisphenol A epoxy based vinyl ester resin production", location: RER}
+  pdms_stamp:        {database: ecoinvent-3.12-cutoff,  name: "market for silicone product", location: RER}
+  gold_solder:       {database: ecoinvent-3.12-cutoff,  name: "gold production", location: US}
+  tin_solder:        {database: ecoinvent-3.12-cutoff,  name: "market for tin"}
+  solder_flux:       {database: ecoinvent-3.12-cutoff,  name: "market for flux, for wave soldering"}
+  ph3:               {database: Input Flows Collection,  name: "Phosphine, production"}
+  silica_slurry:     {database: ecoinvent-3.12-cutoff,  name: "market for silica sand"}
+  koh:               {database: ecoinvent-3.12-cutoff,  name: "market for potassium hydroxide"}
+  polish_pad:        {database: ecoinvent-3.12-cutoff,  name: "market for polyurethane, rigid foam"}
+  tmin:              {database: Input Flows Collection, name: "Trimethylindium, production"}
+  tmga:              {database: Input Flows Collection, name: "Trimethylgallium, production"}
+  tba:               {database: Input Flows Collection, name: "Tertiarybutylarsine, production"}
+  tbp:               {database: Input Flows Collection, name: "Tertiarybutylphosphine, production"}
+  h2:                {database: ecoinvent-3.12-cutoff,  name: "market for hydrogen, gaseous, low pressure"}
+  bio_h2:            {database: biosphere3, name: "Hydrogen", categories: [air]}
+  bio_arsenic:       {database: biosphere3, name: "Arsenic ion", categories: [air]}
+  # --- wet chemistry / generic-step reagents ---
+  hmds:              {database: ecoinvent-3.12-cutoff,  name: "hexamethyldisilazane production, amination of chlorosilane"}
+  sulfuric_acid:     {database: ecoinvent-3.12-cutoff,  name: "sulfuric acid production"}
+  h2o2:              {database: ecoinvent-3.12-cutoff,  name: "hydrogen peroxide production, product in 50% solution state"}
+  hf:                {database: ecoinvent-3.12-cutoff,  name: "hydrogen fluoride production"}
+  neutralization_hf: {database: Input Flows Collection,  name: "Neutralization HF"}
+  boe:               {database: Input Flows Collection,  name: "Buffered Oxide Etch production"}
+  # --- dry-etch gases (Bosch / DRIE) ---
+  sf6_5n:            {database: Input Flows Collection,  name: "sulfur hexafluoride 5N production"}
+  c4f8:              {database: Input Flows Collection,  name: "C4F8 production"}
+  helium:            {database: ecoinvent-3.12-cutoff,  name: "market for helium"}
+  # --- deposition precursors / metals ---
+  tma:               {database: Input Flows Collection,  name: "Trimethylaluminium production"}
+  nickel:            {database: ecoinvent-3.12-cutoff,  name: "market for nickel, class 1"}
+  gold:              {database: ecoinvent-3.12-cutoff,  name: "gold production", location: US}
+  tungsten:          {database: Input Flows Collection,    name: "tungsten production"}
+  # --- consumables / waste ---
+  pvc_tape:          {database: ecoinvent-3.12-cutoff,  name: "market for polyvinylchloride, flexible, pellets, recycled"}
+  hw_incin:          {database: ecoinvent-3.12-cutoff,  name: "treatment of hazardous waste, hazardous waste incineration", location: "Europe without Switzerland"}
+  wastewater_tx:     {database: ecoinvent-3.12-cutoff,  name: "treatment of wastewater, average, wastewater treatment", location: "Europe without Switzerland"}
+  # biosphere emissions (to air)
+  bio_acetone:          {database: biosphere3, name: "Acetone",         categories: [air]}
+  bio_ipa:              {database: biosphere3, name: "Isopropanol",     categories: [air]}
+  bio_n2:               {database: biosphere3, name: "Nitrogen",        categories: [air]}
+  bio_argon:            {database: biosphere3, name: "Argon",           categories: [air]}
+  bio_chf3:             {database: biosphere3, name: "Trifluoromethane", categories: [air]}
+  bio_oxygen:           {database: biosphere3, name: "Oxygen", categories: [air]}
+  bio_co2:              {database: biosphere3, name: "Carbon dioxide, fossil", categories: [air]}
+  bio_n2o:              {database: biosphere3, name: "Dinitrogen monoxide", categories: [air]}
+  bio_voc:              {database: biosphere3, name: "VOC, volatile organic compounds", categories: [air]}
+  bio_ammonia:          {database: biosphere3, name: "Ammonia", categories: [air]}
+  bio_hf:               {database: biosphere3, name: "Hydrogen fluoride", categories: [air]}
+  bio_ch4:              {database: biosphere3, name: "Methane, fossil", categories: [air]}
+  bio_sf6:              {database: biosphere3, name: "Sulfur hexafluoride", categories: [air]}
+  # C4F8 (octafluorocyclobutane) is ABSENT from this biosphere3 -> proxied by C2F6
+  # (Hexafluoroethane), the nearest available PFC. See the drie_bosch note.
+  bio_c4f8_proxy:       {database: biosphere3, name: "Hexafluoroethane", categories: [air]}
+
+# ---------------------------------------------------------------------
+# Materials catalog. A choice-parameter (type: choice) maps a chosen
+# name to a link in the `links:` catalog above. Resist and developer are
+# chosen INDEPENDENTLY by the operator (no auto-coupling) -- the person
+# knows which developer goes with which resist. To add a material:
+# one line here + its entry in `links:`.
+# ---------------------------------------------------------------------
+materials:
+  resists:                     # resist_type choice  ->  links: key
+    CSAR6200: csar_resist
+    HSQ:      hsq
+    PMMA:     pmma
+    AZ1512:   az1512
+    S1813:    s1813
+  developers:                  # developer_type choice  ->  links: key
+    AR600_546: ar600_546_dev
+    AZ351B:    az351b_dev
+    AZ400K:    az400k_dev
+    AR300_47:  ar300_47_dev
+    MIBK_IPA:  ipa             # modelled via IPA proxy (add MIBK component when available)
+    MF319:     null            # TODO: add MF-319 developer proxy
+  substrates:                  # (legacy) substrate_type choice  ->  links: key
+    SOI:      soi_wafer
+    Si:       si_wafer          # ecoinvent as-is: 270 um legacy thin wafer
+    Si_675um: si_wafer_675      # thickness-corrected modern 150 mm wafer (RECOMMENDED)
+    InP:      inp_wafer
+  # Real, purchasable wafer FORMATS: material + SEMI-standard diameter + coupled thickness.
+  # Each maps to a thickness-correct per-m2 dataset; diameter sets the area. Impossible
+  # combos (e.g. 300 mm InP) are simply not listed. mat is only for grouping in the UI.
+  substrate_formats:
+    "Si 100 mm (525 um)":   {mat: Si,  dia_mm: 100, link: si_wafer_525}
+    "Si 150 mm (675 um)":   {mat: Si,  dia_mm: 150, link: si_wafer_675}
+    "Si 200 mm (725 um)":   {mat: Si,  dia_mm: 200, link: si_wafer_725}
+    "Si 300 mm (775 um)":   {mat: Si,  dia_mm: 300, link: si_wafer_775}
+    "SOI 150 mm":           {mat: SOI, dia_mm: 150, link: soi_wafer}
+    "SOI 200 mm":           {mat: SOI, dia_mm: 200, link: soi_wafer}
+    "SOI 300 mm":           {mat: SOI, dia_mm: 300, link: soi_wafer}
+    "InP 50 mm (350 um)":   {mat: InP, dia_mm: 50,  link: inp_wafer_350}
+    "InP 76 mm (625 um)":   {mat: InP, dia_mm: 76,  link: inp_wafer}
+    "InP 100 mm (625 um)":  {mat: InP, dia_mm: 100, link: inp_wafer}
+    "InP 150 mm (675 um)":  {mat: InP, dia_mm: 150, link: inp_wafer_675}
+    "Ge 100 mm (500 um)":   {mat: Ge,  dia_mm: 100, link: ge_wafer}
+    "Ge 150 mm (500 um)":   {mat: Ge,  dia_mm: 150, link: ge_wafer}
+    "Ge 200 mm (500 um)":   {mat: Ge,  dia_mm: 200, link: ge_wafer}
+  implant_sources:             # ion_implantation dopant choice  ->  links: key
+    B_BF3:  bf3
+    P_PH3:  ph3                # dedicated Phosphine, production dataset (Input Flows Collection)
+    As_AsH3: arsine
+  etchants:                    # wet_etch etchant_type choice  ->  links: key
+    BOE:           boe
+    TMAH:          tmah
+    HF_structural: hf
+  etchant_waste:               # where each wet etchant's spent bath goes (chemistry-specific collector)
+    BOE:           neutralization_hf
+    TMAH:          hw_incin
+    HF_structural: neutralization_hf
+  etchant_rho:                 # bath-solution density (kg/L) for the mL volume input
+    BOE:           1.10
+    TMAH:          1.00        # dilute (2%) aqueous
+    HF_structural: 1.15
+  metals:                      # pvd_metal metal_type choice  ->  links: key
+    Ni: nickel
+    Au: gold
+    W:  tungsten
+  mocvd_precursors:            # epitaxy group-III / group-V sources
+    TMIn: tmin
+    TMGa: tmga
+    TBAs: tba
+    TBP:  tbp
+  grids:                       # run-level `grid` setting, voltage=MV  ->  links: key
+    CH:  elec_CH
+    DE:  elec_DE
+    FR:  elec_FR
+    IT:  elec_IT
+    NL:  elec_NL
+    JP:  elec_JP
+    KR:  elec_KR
+    TW:  elec_TW
+    CN:  elec_CN
+    US:  elec_US
+    RER: elec_RER
+  grids_hv:                    # run-level `grid` setting, voltage=HV (fab fed from the HV grid)
+    CH:  elec_CH_HV
+    DE:  elec_DE_HV
+    FR:  elec_FR_HV
+    IT:  elec_IT_HV
+    NL:  elec_NL_HV
+    JP:  elec_JP_HV
+    KR:  elec_KR_HV
+    TW:  elec_TW_HV
+    CN:  elec_CN_HV
+    US:  elec_US_HV
+    RER: elec_RER_HV
+
+# ---------------------------------------------------------------------
+# Templates
+#   role:  technosphere | biosphere   (production + predecessor auto-added)
+#   amount: Python expression over this template's parameters
+# ---------------------------------------------------------------------
+templates:
+
+  - id: spin_coating
+    family: "Lithography"
+    label: "Spin coating (resist application)"
+    source_step: "40. Spin-Coating CSAR 6200-13"
+    batchable: false                 # inherently serial, one wafer at a time
+    # picking a resist fills the mass fields below from the line's measured dispense;
+    # the user can still type over them afterwards
+    choice_defaults:
+      resist_type:
+        CSAR6200: {resist_mass_g: 2.97,  casting_solvent_g: 0.0}
+        HSQ:      {resist_mass_g: 1.53,  casting_solvent_g: 0.0}
+        PMMA:     {resist_mass_g: 0.18,  casting_solvent_g: 2.82}
+        AZ1512:   {resist_mass_g: 2.20,  casting_solvent_g: 0.0}
+        S1813:    {resist_mass_g: 4.70,  casting_solvent_g: 0.0}
+    parameters:
+      - {name: resist_type,     type: choice, default: CSAR6200,
+         choices: [CSAR6200, HSQ, PMMA, AZ1512, S1813],
+         about: "which resist. Selecting one fills the dispense mass (and, for PMMA, the casting solvent) from the line's measured values -- override them if your recipe differs"}
+      - {name: resist_mass_g,   unit: g,  default: 2.97, about: "resist SOLIDS dispensed & spun off; scales with wafer area"}
+      - {name: casting_solvent_g, unit: g, default: 0.0, about: "PMMA ONLY: the casting solvent (line uses ~2.8-2.9 g, ~94% of the solution mass). Leave 0 for CSAR/HSQ/AZ1512/S1813 -- those proxies already include their solvent"}
+      - {name: tool_power_kW,   unit: kW, default: 1.60, advanced: true, about: "NAMEPLATE: spinner + local exhaust. Fixed tool spec -- edit only for a different spinner"}
+      - {name: process_time_s,  unit: s,  default: 300, advanced: true, about: "STANDARD spin program (~5 min occupancy); energy is trivial (~0.13 kWh) so rarely worth changing"}
+      - {name: clean_acetone_mL, unit: mL, default: 20.179, advanced: true, about: "chuck/edge-bead clean; fully volatilises (was 15.82 g / 0.784)"}
+    flows:
+      - {to: elec,                        role: technosphere, unit: kWh, amount: "tool_power_kW * process_time_s / 3600", unc: primary_electricity}
+      - {to_expr: "resists[resist_type]", role: technosphere, unit: kg,  amount: "resist_mass_g / 1000 * area_factor",    unc: flat_tech, note: "dispense scales with wafer AREA"}
+      - {to: casting_solvent,             role: technosphere, unit: kg,  amount: "casting_solvent_g / 1000 * area_factor", unc: flat_tech}
+      - {to: spent_solvent_tx,            role: technosphere, unit: kg,  amount: "-casting_solvent_g / 1000 * area_factor", unc: flat_tech, note: "spun-off casting solvent -> solvent waste"}
+      - {to: acetone,                     role: technosphere, unit: kg,  amount: "clean_acetone_mL * rho['acetone'] / 1000", unc: solvent_tech}
+      - {to: bio_acetone,                 role: biosphere,    unit: kg,  amount: "clean_acetone_mL * rho['acetone'] / 1000", unc: solvent_bio}
+      - {to: textile_wipe,                role: technosphere, unit: kg,  amount: "0.0105",                                unc: flat_tech}
+      - {to: pe_wipe,                     role: technosphere, unit: kg,  amount: "0.00028",                               unc: flat_tech}
+      - {to: msw,                         role: technosphere, unit: kg,  amount: "-(0.0105 + 0.00028 + resist_mass_g/1000)", unc: flat_tech, note: "solid waste = wipes + cured resist"}
+
+  - id: ebeam_exposure
+    family: "Lithography"
+    label: "E-beam lithography exposure"
+    source_step: "42. E-beam exposure (window opening)"
+    batchable: false                 # serial write per wafer
+    parameters:
+      - {name: exposure_time_h, unit: h,  default: 28.0, about: "write time -- DOMINANT energy driver / hotspot. Set from your pattern area and dose"}
+      - {name: tool_power_kW,   unit: kW, default: 20.0, advanced: true, about: "NAMEPLATE: column + stage + vacuum + chiller. Fixed tool spec"}
+    flows:
+      - {to: elec, role: technosphere, unit: kWh, amount: "tool_power_kW * exposure_time_h", unc: flat_tech}
+
+  - id: development
+    family: "Lithography"
+    label: "Resist development"
+    source_step: "43. CSAR development (AR 600-546)"
+    batchable: false
+    note: "SCALES with bath life: developer + DI-water divide by wafers_per_bath. PER WAFER (fixed): IPA stop-rinse, N2."
+    parameters:
+      - {name: developer_type, type: choice, default: AR600_546,
+         choices: [AR600_546, AZ351B, AZ400K, AR300_47, MIBK_IPA, MF319], about: "which developer (pick the one matching your resist)"}
+      - {name: developer_mL,      unit: mL, default: 876.0, about: "developer BATH FILL (shared over bath life)"}
+      - {name: ipa_mL,            unit: mL, default: 998.728, about: "IPA stop-rinse, per wafer (was 785 g / 0.786)"}
+      - {name: ipa_evap_fraction, unit: "-", default: 0.333, advanced: true, about: "LCA ASSUMPTION (not a bench input): fraction of the IPA rinse volatilising to air; the REMAINDER goes to solvent-waste incineration. MEASURED ~40% lever on this step -- so the default matters, but it's an emission split, not something the operator sets"}
+      - {name: di_water_L,        unit: L,  default: 10.0,  about: "shared rinse water (over bath life)"}
+      - {name: wafers_per_bath,   unit: "-", default: 25, about: "wafers before the developer bath is replaced (1 = fresh per wafer)"}
+      - {name: n2_mass_g,         unit: g,  default: 31.25, advanced: true, about: "N2 blow-dry, per wafer. Wet-bench standard: ~50 L/min gun x ~30 s = 25 L x 1.2504 g/L (GAS-phase density) = 31.25 g. Harmonised 2026-08-08 across the whole line"}
+    flows:
+      - {to_expr: "developers[developer_type]", role: technosphere, unit: kg, amount: "developer_mL * rho['developer'] / 1000", unc: primary_liquid, scaling: per_bath}
+      - {to: ipa,                  role: technosphere, unit: kg, amount: "ipa_mL * rho['ipa'] / 1000",                              unc: solvent_tech}
+      - {to: bio_ipa,              role: biosphere,    unit: kg, amount: "ipa_mL * rho['ipa'] / 1000 * ipa_evap_fraction",          unc: flat_bio}
+      - {to: spent_solvent_tx,     role: technosphere, unit: kg, amount: "-developer_mL * rho['developer'] / 1000", unc: flat_tech, scaling: per_bath, note: "spent developer -- shared over bath life"}
+      - {to: spent_solvent_tx,     role: technosphere, unit: kg, amount: "-ipa_mL * rho['ipa'] / 1000 * (1-ipa_evap_fraction)", unc: flat_tech, note: "un-evaporated IPA stop-rinse -- per wafer"}
+      - {to: n2_5n,                role: technosphere, unit: kg, amount: "n2_mass_g / 1000",                               unc: flat_tech}
+      - {to: bio_n2,               role: biosphere,    unit: kg, amount: "n2_mass_g / 1000",                               unc: flat_bio}
+      - {to: di_water,             role: technosphere, unit: kg, amount: "di_water_L * rho['water']",                  unc: primary_liquid, scaling: per_bath}
+      - {to: neutralization_water, role: technosphere, unit: kg, amount: "-di_water_L * rho['water']",                 unc: primary_liquid, scaling: per_bath}
+
+  - id: rie_etch
+    family: "Etch"
+    label: "Reactive-ion etch (RIE / ICP)"
+    source_step: "45. RIE etching SiO2 (Oxford ICP)"
+    batchable: true
+    note: "Gas + electricity are declared per_run, so the engine divides them by wafers_per_run automatically."
+    parameters:
+      - {name: etch_time_min,      unit: min, default: 30.0, about: "drives both energy and gas mass"}
+      - {name: chf3_flow_sccm,     unit: sccm, default: 6.000,  about: "CHF3 etch gas (mass scales with etch_time)"}
+      - {name: wafers_per_run,     unit: "-", default: 1, about: "wafers sharing one tool/chamber run"}
+      - {name: chf3_emit_fraction, unit: "-",  default: 0.01, advanced: true, about: "LCA ASSUMPTION (not a bench input): fraction of CHF3 escaping POU abatement to air. Default 0.01 = ~99% abatement; 1.0 = no abatement. HIGH-LEVERAGE on GWP (CHF3 GWP100 14600) -- set from the fab's abatement, not the recipe"}
+      - {name: tool_power_kW,      unit: kW,  default: 2.0, advanced: true, about: "NAMEPLATE tool power"}
+      - {name: argon_flow_sccm,    unit: sccm, default: 14.00, advanced: true, about: "carrier (standard)"}
+      - {name: n2_flow_sccm,       unit: sccm, default: 4.667, advanced: true, about: "carrier (standard)"}
+    # gas mass(kg) = flow(sccm) x time(min) x M/22414/1e6 ; factors: CHF3 3.1235e-6, Ar 1.7823e-6, N2 1.2498e-6
+    flows:
+      - {to: elec,      role: technosphere, unit: kWh, amount: "tool_power_kW * etch_time_min / 60", unc: flat_tech, scaling: per_run}
+      - {to: chf3_5n,   role: technosphere, unit: kg,  amount: "chf3_flow_sccm * etch_time_min * 3.1235e-6",  unc: flat_tech, scaling: per_run}
+      - {to: ar_5n,     role: technosphere, unit: kg,  amount: "argon_flow_sccm * etch_time_min * 1.7823e-6", unc: flat_tech, scaling: per_run}
+      - {to: n2_5n,     role: technosphere, unit: kg,  amount: "n2_flow_sccm * etch_time_min * 1.2498e-6",    unc: flat_tech, scaling: per_run}
+      - {to: bio_chf3,  role: biosphere,    unit: kg,  amount: "chf3_flow_sccm * etch_time_min * 3.1235e-6 * chf3_emit_fraction", unc: flat_bio, scaling: per_run}
+      - {to: bio_argon, role: biosphere,    unit: kg,  amount: "argon_flow_sccm * etch_time_min * 1.7823e-6", unc: flat_bio, note: "inert, 100% released", scaling: per_run}
+      - {to: bio_n2,    role: biosphere,    unit: kg,  amount: "n2_flow_sccm * etch_time_min * 1.2498e-6",    unc: flat_bio, scaling: per_run}
+
+  - id: resist_strip
+    family: "Cleaning"
+    label: "Resist strip (ultrasonic solvent bath)"
+    source_step: "25. PR Removal, ultrasonic bath"
+    batchable: true
+    note: "SCALES with bath life: acetone/IPA/DI-water + spent-solvent divide by wafers_per_bath. PER WAFER (fixed): N2, electricity."
+    parameters:
+      - {name: acetone_mass_g,       unit: g,  default: 1186.5, about: "acetone BATH FILL (shared over bath life)"}
+      - {name: ipa_mass_g,           unit: g,  default: 164.8, about: "IPA in the solvent bath"}
+      - {name: acetone_evap_fraction, unit: "-", default: 0.333, about: "acetone volatilising in open bath"}
+      - {name: ipa_evap_fraction,    unit: "-", default: 1.0,   about: "IPA fully volatilises"}
+      - {name: n2_mass_g,            unit: g,  default:  31.25, about: "N2 blow-dry, per wafer. Wet-bench standard: ~50 L/min gun x ~30 s = 25 L x 1.2504 g/L (GAS-phase density) = 31.25 g. Harmonised 2026-08-08 across the whole line"}
+      - {name: di_water_kg,          unit: kg, default: 10.1, about: "rinse-tank water (shared over bath life)"}
+      - {name: tool_power_kW,        unit: kW, default: 0.90}
+      - {name: process_time_min,     unit: min, default: 1.5}
+      - {name: wafers_per_bath,      unit: "-", default: 25, about: "wafers processed before the bath is replaced -- SET to your bath's real life (1 = fresh bath every wafer)"}
+    flows:
+      - {to: acetone,          role: technosphere, unit: kg,  amount: "acetone_mass_g / 1000",                       unc: solvent_tech, scaling: per_bath}
+      - {to: bio_acetone,      role: biosphere,    unit: kg,  amount: "acetone_mass_g / 1000 * acetone_evap_fraction", unc: flat_bio, scaling: per_bath}
+      - {to: ipa,              role: technosphere, unit: kg,  amount: "ipa_mass_g / 1000",                           unc: solvent_tech}
+      - {to: bio_ipa,          role: biosphere,    unit: kg,  amount: "ipa_mass_g / 1000 * ipa_evap_fraction",       unc: flat_bio}
+      - {to: elec,             role: technosphere, unit: kWh, amount: "tool_power_kW * process_time_min / 60",                         unc: primary_electricity}
+      - {to: spent_solvent_tx, role: technosphere, unit: kg,  amount: "-acetone_mass_g / 1000 * (1-acetone_evap_fraction)", unc: flat_tech, scaling: per_bath}
+      - {to: di_water,         role: technosphere, unit: kg,  amount: "di_water_kg",                                 unc: primary_liquid, scaling: per_bath}
+      - {to: neutralization_water, role: technosphere, unit: kg, amount: "-di_water_kg",                             unc: primary_liquid, scaling: per_bath}
+      - {to: n2_5n,            role: technosphere, unit: kg,  amount: "n2_mass_g / 1000",                                              unc: primary_gas_in}
+      - {to: bio_n2,           role: biosphere,    unit: kg,  amount: "n2_mass_g / 1000",                                             unc: flat_bio}
+
+  - id: pecvd
+    family: "Deposition"
+    label: "PECVD (dielectric deposition)"
+    source_step: "28. PECVD deposition, protective layer"
+    batchable: true
+    note: "Gas + electricity are declared per_run, so the engine divides them by wafers_per_run automatically."
+    parameters:
+      - {name: tool_power_kW,     unit: kW,  default: 15.0}
+      - {name: process_time_min,  unit: min, default: 40.0}
+      - {name: sih4_n2_flow_g_min, unit: g/min, default: 0.02130, about: "SiH4/N2 precursor mix mass-flow (mixture -> g/min not sccm)"}
+      - {name: n2o_flow_g_min,     unit: g/min, default: 0.10500, about: "N2O oxidant mass-flow"}
+      - {name: n2_flow_g_min,      unit: g/min, default: 0.01875, about: "N2 purge mass-flow"}
+      - {name: n2o_emit_fraction,  unit: "-",   default: 0.97,    about: "fraction of N2O vented (strong GHG)"}
+      - {name: wafers_per_run,     unit: "-", default: 1, about: "wafers sharing one tool/chamber run"}
+    flows:
+      - {to: elec,           role: technosphere, unit: kWh, amount: "tool_power_kW*process_time_min/60", unc: primary_electricity, scaling: per_run}
+      - {to: sih4_n2,        role: technosphere, unit: kg,  amount: "sih4_n2_flow_g_min*process_time_min/1000", unc: flat_tech, scaling: per_run}
+      - {to: n2o_production, role: technosphere, unit: kg,  amount: "n2o_flow_g_min*process_time_min/1000",     unc: flat_tech, scaling: per_run}
+      - {to: n2_5n,          role: technosphere, unit: kg,  amount: "n2_flow_g_min*process_time_min/1000",       unc: flat_tech, scaling: per_run}
+      - {to: bio_n2o,        role: biosphere,    unit: kg,  amount: "n2o_flow_g_min*process_time_min/1000*n2o_emit_fraction", unc: flat_bio, note: "N2O strong GHG", scaling: per_run}
+      - {to: bio_n2,         role: biosphere,    unit: kg,  amount: "n2_flow_g_min*process_time_min/1000", unc: flat_bio, scaling: per_run}
+
+  - id: doping_spin_on
+    family: "Doping"
+    label: "Spin-on dopant (application; drive-in = add an RTA step)"
+    source_step: "27. Spincoating dopant + curing"
+    batchable: false
+    parameters:
+      - {name: dopant_mass_g,    unit: g,  default: 2.45, about: "P509 phosphorosilicate spin-on dopant"}
+      - {name: tool_power_kW,    unit: kW, default: 1.9}
+      - {name: process_time_min, unit: min, default: 50.0}
+      - {name: clean_acetone_g,  unit: g,  default: 15.82}
+    flows:
+      - {to: p509,         role: technosphere, unit: kg,  amount: "dopant_mass_g/1000",                 unc: flat_tech}
+      - {to: elec,         role: technosphere, unit: kWh, amount: "tool_power_kW*process_time_min/60",  unc: primary_electricity}
+      - {to: acetone,      role: technosphere, unit: kg,  amount: "clean_acetone_g/1000",               unc: solvent_tech}
+      - {to: bio_acetone,  role: biosphere,    unit: kg,  amount: "clean_acetone_g/1000",               unc: solvent_bio}
+      - {to: bio_voc,      role: biosphere,    unit: kg,  amount: "0.000504",                           unc: flat_bio, note: "VOC from dopant curing"}
+      - {to: textile_wipe, role: technosphere, unit: kg,  amount: "0.0035",                             unc: flat_tech}
+      - {to: msw,          role: technosphere, unit: kg,  amount: "-0.005709",                          unc: flat_tech}
+
+  - id: rta_anneal
+    family: "Thermal"
+    label: "Rapid thermal anneal (RTA)"
+    source_step: "29. Rapid Thermal Annealing"
+    batchable: false
+    parameters:
+      - {name: tool_power_kW,    unit: kW,  default: 6.0}
+      - {name: process_time_min, unit: min, default: 5.3}
+      - {name: n2_mass_g,        unit: g,   default: 0.1663, about: "N2 ambient"}
+    flows:
+      - {to: elec,   role: technosphere, unit: kWh, amount: "tool_power_kW*process_time_min/60", unc: primary_electricity}
+      - {to: n2_5n,  role: technosphere, unit: kg,  amount: "n2_mass_g/1000",                    unc: flat_tech}
+      - {to: bio_n2, role: biosphere,    unit: kg,  amount: "n2_mass_g/1000",                    unc: flat_bio}
+
+  - id: cleanroom_overhead
+    family: "Facility"
+    label: "Cleanroom overhead (HVAC + utilities)"
+    source_step: "70. Cleanroom electricity overhead (re-expressed per step)"
+    batchable: false
+    parameters:
+      - {name: n_steps, unit: "-", default: null, about: "LEAVE BLANK to use the number of process steps in this run (recommended). Set a number only to override. Per-step unit = whole-line 69-step baseline average"}
+    flows:
+      - {to: elec,        role: technosphere, unit: kWh, amount: "0.724580 * n_steps", unc: primary_electricity}
+      - {to: natural_gas, role: technosphere, unit: m3,  amount: "0.0074152 * n_steps", unc: flat_tech}
+      - {to: bio_co2,     role: biosphere,    unit: kg,  amount: "0.0163130 * n_steps", unc: flat_bio}
+
+  - id: substrate
+    family: "Substrate"
+    label: "Substrate wafer"
+    source_step: "consumed at step 1 of the line"
+    batchable: false
+    note: "Pick a REAL wafer format: material + SEMI-standard diameter + its coupled thickness. Area follows the diameter; the dataset already carries the correct thickness (= crystal mass). Impossible sizes (e.g. 300 mm InP) are simply not offered."
+    parameters:
+      - {name: wafer_format, type: choice, default: "Si 150 mm (675 um)",
+         choices: ["Si 100 mm (525 um)", "Si 150 mm (675 um)", "Si 200 mm (725 um)", "Si 300 mm (775 um)",
+                   "SOI 150 mm", "SOI 200 mm", "SOI 300 mm",
+                   "InP 50 mm (350 um)", "InP 76 mm (625 um)", "InP 100 mm (625 um)", "InP 150 mm (675 um)",
+                   "Ge 100 mm (500 um)", "Ge 150 mm (500 um)", "Ge 200 mm (500 um)"],
+         about: "a real, purchasable wafer -- material, SEMI diameter and its thickness together"}
+      - {name: n_wafers, unit: "-", default: 1, about: "number of wafers"}
+    flows:
+      - {to_expr: "substrate_formats[wafer_format]['link']", role: technosphere, unit: m2,
+         amount: "3.14159265358979 * (substrate_formats[wafer_format]['dia_mm']/2000.0)**2 * n_wafers", unc: flat_tech,
+         note: "area = pi*r^2 from the format's diameter; thickness (crystal mass) is baked into the chosen dataset"}
+
+  # ===================== DICING =====================
+  - id: dicing
+    family: "Dicing"
+    label: "Wafer dicing (mechanical saw)"
+    source_step: "24. Dicing Wafer with PR"
+    batchable: false
+    note: "Cooling water DOMINATES: 188 kg/wafer (4 L/min cutting + 1.5 L/min running-rinse). Apply a protective resist coat first (Lithography > spin coating)."
+    parameters:
+      - {name: tool_power_kW,     unit: kW, default: 1.20, about: "DISCO DAD 341 air-bearing spindle"}
+      - {name: cut_time_min,      unit: min, default: 5.0, about: "cutting + indexing"}
+      - {name: cooling_water_kg,  unit: kg, default: 188.0, about: "DI cooling/rinse water -- the hotspot of this step"}
+      - {name: ipa_mass_g,        unit: g,  default: 15.7, about: "post-dice IPA rinse; volatilises"}
+      - {name: tape_mass_g,       unit: g,  default: 0.96, about: "dicing tape (flexible PVC)"}
+      - {name: wipe_mass_g,       unit: g,  default: 7.0}
+      - {name: compressed_air_m3, unit: m3, default: 19.44, about: "on-site compressed air for the saw (chuck vacuum, air bearing, blow-off). Kaeser: 19.44 m3 at 7.5 bar"}
+      - {name: compressor_kWh_per_m3, unit: kWh/m3, default: 0.11831, about: "compressor specific energy (2.3 kWh / 19.44 m3, Kaeser spec). Compressed air DOMINATES this step's energy -- 23x the spindle"}
+    flows:
+      - {to: elec,                 role: technosphere, unit: kWh, amount: "tool_power_kW * cut_time_min / 60", unc: primary_electricity, note: "DISCO DAD 341 spindle"}
+      - {to: elec,                 role: technosphere, unit: kWh, amount: "compressed_air_m3 * compressor_kWh_per_m3", unc: primary_electricity, note: "on-site compressed-air generation"}
+      - {to: di_water,             role: technosphere, unit: kg,  amount: "cooling_water_kg",                  unc: primary_liquid}
+      - {to: neutralization_water, role: technosphere, unit: kg,  amount: "-cooling_water_kg",                 unc: primary_liquid}
+      - {to: ipa,                  role: technosphere, unit: kg,  amount: "ipa_mass_g / 1000",                 unc: solvent_tech}
+      - {to: bio_ipa,              role: biosphere,    unit: kg,  amount: "ipa_mass_g / 1000",                 unc: solvent_bio, note: "100% volatilises"}
+      - {to: pvc_tape,             role: technosphere, unit: kg,  amount: "tape_mass_g / 1000",                unc: flat_tech}
+      - {to: textile_wipe,         role: technosphere, unit: kg,  amount: "wipe_mass_g / 1000",                unc: flat_tech}
+      - {to: msw,                  role: technosphere, unit: kg,  amount: "-(tape_mass_g + wipe_mass_g) / 1000", unc: flat_tech}
+
+  # ===================== GENERIC (bonus, cross-cutting) =====================
+  # Steps whose inventory is set by tool + time + consumable and NOT by the material
+  # underneath -- so they can be dropped anywhere in a flow.
+
+  - id: o2_plasma_treatment
+    family: "Generic"
+    label: "O2 plasma treatment (ash / descum / clean / bond activation)"
+    source_step: "generalises line steps 9, 26, 32, 44, 60, 65, 69 + TEPLA GIGA"
+    batchable: true
+    note: "cycle_overhead_min IS the tool difference: barrel asher (Tepla) = 0; high-vacuum ICP (Oxford) = ~15 (pump-down + vent). Both draw ~2 kW."
+    parameters:
+      - {name: tool_power_kW,      unit: kW,  default: 2.0,  about: "WHOLE TOOL (generator + pump + controls) -- project convention"}
+      - {name: process_time_min,   unit: min, default: 5.0,  about: "plasma-on time"}
+      - {name: cycle_overhead_min, unit: min, default: 0.0,  about: "chamber pump-down + vent. 0 = barrel asher; ~15 = Oxford ICP"}
+      - {name: o2_flow_sccm,       unit: sccm, default: 500, about: "500 = Tepla standard; the ICP runs far lower"}
+      - {name: o2_slip_fraction,   unit: "-", default: 1.0,  about: "1.0 = clean surface (full pass-through); ~0.33 when ashing organics"}
+      - {name: organic_co2_g,      unit: g,   default: 0.0,  about: "CO2 from oxidising resist carbon; 0 for descum/activation on a clean surface"}
+      - {name: ar_carrier_g,       unit: g,   default: 0.0,  about: "Ar strike/carrier gas -- the Tepla recipes use 1.2 g. 0 for pure-O2 plasma"}
+      - {name: n2_purge_g,         unit: g,   default: 0.175, about: "N2 chamber purge/vent, 1 cycle (70 sccm x ~2 min). Every vacuum plasma tool vents"}
+      - {name: wafers_per_run, unit: "-", default: 1, about: "wafers sharing one tool/chamber run"}
+    flows:
+      - {to: elec,       role: technosphere, unit: kWh, amount: "tool_power_kW * (process_time_min + cycle_overhead_min) / 60", unc: primary_electricity, scaling: per_run}
+      - {to: o2_5n,      role: technosphere, unit: kg,  amount: "o2_flow_sccm * process_time_min * 1.429e-6", unc: primary_gas_in, scaling: per_run}
+      - {to: bio_oxygen, role: biosphere,    unit: kg,  amount: "o2_flow_sccm * process_time_min * 1.429e-6 * o2_slip_fraction", unc: primary_gas_emission, scaling: per_run}
+      - {to: bio_co2,    role: biosphere,    unit: kg,  amount: "organic_co2_g / 1000", unc: flat_bio}
+      - {to: ar_5n,      role: technosphere, unit: kg,  amount: "ar_carrier_g / 1000", unc: primary_gas_in, scaling: per_run}
+      - {to: bio_argon,  role: biosphere,    unit: kg,  amount: "ar_carrier_g / 1000", unc: flat_bio, scaling: per_run, note: "inert, 100% released"}
+      - {to: n2_5n,      role: technosphere, unit: kg,  amount: "n2_purge_g / 1000", unc: primary_gas_in, scaling: per_run}
+      - {to: bio_n2,     role: biosphere,    unit: kg,  amount: "n2_purge_g / 1000", unc: flat_bio, scaling: per_run}
+
+  - id: hotplate_bake
+    family: "Generic"
+    label: "Bake / anneal (hotplate, oven or tube furnace)"
+    source_step: "generalises steps 4, 41 (resist bakes), 39 (tube furnace) and the 240 C bonding anneal"
+    batchable: true
+    note: "Covers a hotplate AND a tube furnace: inventory-wise both are power x time (+ optional purge). For a MULTI-STAGE furnace profile use the time-averaged power -- e.g. step 39 is 38.69 kWh over 18.66 h = 2.07 kW average to 600 C. Add voc_mass_g only for resist bakes."
+    parameters:
+      - {name: heater_power_kW, unit: kW,  default: 1.0, about: "hotplate ~1 kW; tube furnace = TIME-AVERAGED power over the whole ramp/hold/cool profile"}
+      - {name: bake_time_min,   unit: min, default: 60.0, about: "total time the tool is powered (incl. ramp and cool-down)"}
+      - {name: n2_purge_g,      unit: g,   default: 0.0, about: "furnace/RTA purge gas; 0 for an open hotplate. Step 39 uses 2.5 g"}
+      - {name: voc_mass_g,      unit: g,   default: 0.0, about: "resist solvent released; step 4 = 0.94 g. Zero for a cure/anneal"}
+      - {name: wafers_per_run,  unit: "-", default: 1, about: "a tube furnace takes 25+ wafers per load -- the big lever for long bakes"}
+    flows:
+      - {to: elec,    role: technosphere, unit: kWh, amount: "heater_power_kW * bake_time_min / 60", unc: primary_electricity, scaling: per_run}
+      - {to: n2_5n,   role: technosphere, unit: kg,  amount: "n2_purge_g / 1000", unc: primary_gas_in, scaling: per_run}
+      - {to: bio_n2,  role: biosphere,    unit: kg,  amount: "n2_purge_g / 1000", unc: flat_bio, scaling: per_run}
+      - {to: bio_voc, role: biosphere,    unit: kg,  amount: "voc_mass_g / 1000", unc: flat_bio}
+
+  - id: hmds_prime
+    family: "Generic"
+    label: "HMDS vapour prime (resist adhesion promotion)"
+    source_step: "generalises line steps 2, 11, 18 (already byte-identical)"
+    batchable: true
+    note: "Inventory is independent of the underlying surface (SiO2 / W / TEOS) -- which is exactly what makes it generic. Ammonia is the reaction by-product."
+    parameters:
+      - {name: hmds_mass_g,      unit: g,  default: 0.20}
+      - {name: n2_mass_g,        unit: g,  default: 0.25, about: "N2 carrier"}
+      - {name: tool_power_kW,    unit: kW, default: 1.20, about: "priming oven 130-160 C"}
+      - {name: process_time_min, unit: min, default: 10.0}
+      - {name: wafers_per_run,   unit: "-", default: 1, about: "wafers sharing one tool/chamber run"}
+    flows:
+      - {to: hmds,        role: technosphere, unit: kg,  amount: "hmds_mass_g / 1000", unc: flat_tech, scaling: per_run}
+      - {to: elec,        role: technosphere, unit: kWh, amount: "tool_power_kW * process_time_min / 60", unc: primary_electricity, scaling: per_run}
+      - {to: n2_5n,       role: technosphere, unit: kg,  amount: "n2_mass_g / 1000",   unc: primary_gas_in, scaling: per_run}
+      - {to: bio_n2,      role: biosphere,    unit: kg,  amount: "n2_mass_g / 1000",   unc: flat_bio, scaling: per_run}
+      - {to: bio_ammonia, role: biosphere,    unit: kg,  amount: "hmds_mass_g / 1000 * 0.1053", unc: flat_bio, note: "1 NH3 per HMDS: 17.03/161.4", scaling: per_run}
+
+  - id: piranha_clean
+    family: "Generic"
+    label: "Piranha clean (H2SO4 + H2O2 organic strip)"
+    source_step: "generalises line steps 37, 48, 51 (identical 2.76 kg H2SO4 recipe)"
+    batchable: true
+    note: "UNHEATED by default. For the heated bath set hotplate_power_kW 1.0 + heat_time_min 12. Add an N2 blow-dry step after ONLY if a dry surface is needed next (steps 48/51 go straight into a wet HF dip)."
+    parameters:
+      - {name: h2so4_mass_g,      unit: g,  default: 2760.0, about: "concentrated sulfuric acid"}
+      - {name: h2o2_mass_g,       unit: g,  default: 555.0,  about: "50% hydrogen peroxide"}
+      - {name: di_water_kg,       unit: kg, default: 11.05,  about: "rinse + shared labware dishwasher"}
+      - {name: hotplate_power_kW, unit: kW, default: 0.0,    about: "0 = unheated; 1.0 for the heated bath"}
+      - {name: heat_time_min,     unit: min, default: 0.0}
+      - {name: o2_emission_g,     unit: g,  default: 65.27,  about: "O2 from H2O2 decomposition"}
+      - {name: wafers_per_bath,   unit: "-", default: 1, about: "wafers sharing one piranha fill"}
+    flows:
+      - {to: sulfuric_acid,        role: technosphere, unit: kg,  amount: "h2so4_mass_g / 1000", unc: primary_liquid, scaling: per_bath}
+      - {to: h2o2,                 role: technosphere, unit: kg,  amount: "h2o2_mass_g / 1000",  unc: primary_liquid, scaling: per_bath}
+      - {to: di_water,             role: technosphere, unit: kg,  amount: "di_water_kg",         unc: primary_liquid, scaling: per_bath}
+      - {to: neutralization_water, role: technosphere, unit: kg,  amount: "-(di_water_kg + h2so4_mass_g/1000 + h2o2_mass_g/1000)", unc: primary_liquid, note: "whole aqueous stream to first-stage neutralisation", scaling: per_bath}
+      - {to: elec,                 role: technosphere, unit: kWh, amount: "hotplate_power_kW * heat_time_min / 60", unc: primary_electricity}
+      - {to: bio_oxygen,           role: biosphere,    unit: kg,  amount: "o2_emission_g / 1000", unc: primary_gas_emission, scaling: per_bath}
+
+  - id: hf_dip
+    family: "Generic"
+    label: "HF dip / chemical-oxide strip (surface prep)"
+    source_step: "generalises line steps 49, 52 (byte-identical) and 66"
+    batchable: false
+    note: "SURFACE PREP -- removes 1-2 nm of native/chemical oxide. A deliberate oxide-LAYER removal (BOE) or a structural wet etch (TMAH) is the Etch-family 'Wet etch' template instead."
+    parameters:
+      - {name: hf_mass_g,               unit: g,  default: 15.0,  about: "pure HF in a 1% bath"}
+      - {name: di_water_kg,             unit: kg, default: 13.585, about: "dilution + rinse + dishwasher"}
+      - {name: neutralization_hf_kg,    unit: kg, default: 3.6,   about: "to the dedicated HF collector"}
+      - {name: neutralization_water_kg, unit: kg, default: 10.0,  about: "already-decontaminated fraction -> generic neutralisation"}
+      - {name: hf_emission_g,           unit: g,  default: 0.0001}
+    flows:
+      - {to: hf,                   role: technosphere, unit: kg, amount: "hf_mass_g / 1000",          unc: primary_liquid}
+      - {to: di_water,             role: technosphere, unit: kg, amount: "di_water_kg",               unc: primary_liquid}
+      - {to: neutralization_hf,    role: technosphere, unit: kg, amount: "-neutralization_hf_kg",     unc: primary_liquid}
+      - {to: neutralization_water, role: technosphere, unit: kg, amount: "-neutralization_water_kg",  unc: primary_liquid}
+      - {to: bio_hf,               role: biosphere,    unit: kg, amount: "hf_emission_g / 1000",      unc: flat_bio}
+
+  # ===================== TECHNIQUE-GAP FILLERS =====================
+
+  - id: optical_exposure
+    family: "Lithography"
+    label: "Optical lithography exposure (mask aligner)"
+    source_step: "5 / 20. Optical Lithography"
+    batchable: false
+    note: "The optical counterpart of e-beam exposure -- a DIFFERENT machine (mask aligner: parallel whole-wafer expose, no write-time scaling). Exposure itself is seconds; the energy is dominated by how long the tool is OCCUPIED (align, load, settle), so the two are separate parameters."
+    parameters:
+      - {name: occupancy_min,    unit: min, default: 15.0, about: "load, align, settle, expose, unload -- the tool draws power throughout. THIS dominates the energy"}
+      - {name: lamp_power_kW,    unit: kW,  default: 1.5, advanced: true, about: "NAMEPLATE: Hg lamp + aligner + local exhaust while exposing"}
+      - {name: exposure_time_s,  unit: s,   default: 20.0, advanced: true, about: "actual UV exposure -- seconds; energy is negligible vs occupancy"}
+      - {name: idle_power_kW,    unit: kW,  default: 0.6, advanced: true, about: "NAMEPLATE: draw while occupied but not exposing (lamp idling, stage, electronics)"}
+    flows:
+      - {to: elec, role: technosphere, unit: kWh, amount: "lamp_power_kW * exposure_time_s / 3600 + idle_power_kW * occupancy_min / 60", unc: primary_electricity}
+
+  - id: wet_etch
+    family: "Etch"
+    label: "Wet etch (BOE / TMAH / HF structural)"
+    source_step: "30. BOE etch, 50. TMAH etch"
+    batchable: true
+    note: "STRUCTURAL wet removal (a layer or bulk Si), NOT the 1-2 nm surface prep -- that is Generic > HF dip. The spent bath is routed to the chemistry's own collector automatically."
+    parameters:
+      - {name: etchant_type,   type: choice, default: BOE, choices: [BOE, TMAH, HF_structural],
+         about: "BOE/HF -> HF collector; TMAH -> dedicated hazardous-waste collector"}
+      - {name: etchant_mL,     unit: mL, default: 1363.636, about: "bath fill VOLUME; mass = volume x the chosen etchant's density (BOE 1.10, TMAH 1.00, HF 1.15). Default 1363.6 mL x 1.10 = 1500 g BOE"}
+      - {name: di_water_L,     unit: L,  default: 12.1,   about: "total rinse + dishwasher water"}
+      - {name: first_rinse_L,  unit: L,  default: 2.1,    about: "the contaminated FIRST rinse; goes to the etchant's own collector. The remainder goes to generic neutralisation. Waste flows are mass-balanced from this -- no separate waste parameter"}
+      - {name: bath_power_kW,  unit: kW, default: 0.0,    about: "0 = room temperature; TMAH at 80 C uses ~1.05"}
+      - {name: etch_time_min,  unit: min, default: 60.0}
+      - {name: wafers_per_bath, unit: "-", default: 1}
+    flows:
+      - {to_expr: "etchants[etchant_type]",      role: technosphere, unit: kg,  amount: "etchant_mL * etchant_rho[etchant_type] / 1000", unc: primary_liquid, scaling: per_bath, note: "bath FILL amortised over its life (wafers_per_bath), matching the spent-bath waste"}
+      - {to: di_water,                           role: technosphere, unit: kg,  amount: "di_water_L * rho['water']",           unc: primary_liquid, scaling: per_bath}
+      - {to_expr: "etchant_waste[etchant_type]", role: technosphere, unit: kg,  amount: "-(etchant_mL * etchant_rho[etchant_type] / 1000 + first_rinse_L * rho['water'])", unc: primary_liquid, scaling: per_bath, note: "MASS BALANCE: spent bath + first (contaminated) rinse -> the chemistry's own collector"}
+      - {to: neutralization_water,               role: technosphere, unit: kg,  amount: "-(di_water_L - first_rinse_L) * rho['water']",          unc: primary_liquid, scaling: per_bath, note: "MASS BALANCE: remaining (already-decontaminated) rinse -> generic neutralisation"}
+      - {to: elec,                               role: technosphere, unit: kWh, amount: "bath_power_kW * etch_time_min / 60",      unc: primary_electricity}
+
+  - id: drie_bosch
+    family: "Etch"
+    label: "Deep RIE, Bosch process (SPTS / STS)"
+    source_step: "36. Etching STPS (SPTS Omega LPX)"
+    batchable: true
+    note: "A DIFFERENT technology from plain RIE: alternates SF6 etch / C4F8 passivation cycles for high-aspect-ratio Si. Both are potent GHGs and the slip past abatement is now modelled (gas_slip_fraction). C4F8 has no biosphere3 flow, so its slip is PROXIED by C2F6 (Hexafluoroethane): C2F6 GWP100 12400 vs C4F8 ~9540, i.e. a CONSERVATIVE ~30% OVER-estimate of that (small) term."
+    parameters:
+      - {name: etch_time_min,   unit: min, default: 37.3, about: "drives both energy and cycle count"}
+      - {name: sf6_mass_g,      unit: g,  default: 0.452, about: "etch step gas (SF6 GWP100 ~24300)"}
+      - {name: c4f8_mass_g,     unit: g,  default: 0.546, about: "passivation gas (C4F8, proxied by C2F6 for its emission)"}
+      - {name: o2_mass_g,       unit: g,  default: 5.0}
+      - {name: wafers_per_run,  unit: "-", default: 1, about: "wafers sharing one tool/chamber run"}
+      - {name: gas_slip_fraction, unit: "-", default: 0.01, advanced: true, about: "LCA ASSUMPTION (not a bench input): fraction of SF6/C4F8 escaping POU abatement to air. Default 0.01 = ~99% abatement; 1.0 = no abatement. VERY HIGH-LEVERAGE (SF6 GWP100 24300) -- set from the fab's abatement"}
+      - {name: tool_power_kW,   unit: kW, default: 3.0, advanced: true, about: "NAMEPLATE tool power"}
+      - {name: ar_mass_g,       unit: g,  default: 0.0089, advanced: true, about: "trace carrier"}
+      - {name: he_mass_g,       unit: g,  default: 1.0, advanced: true, about: "backside wafer cooling (standard)"}
+    flows:
+      - {to: elec,           role: technosphere, unit: kWh, amount: "tool_power_kW * etch_time_min / 60", unc: primary_electricity, scaling: per_run}
+      - {to: sf6_5n,         role: technosphere, unit: kg,  amount: "sf6_mass_g / 1000",   unc: primary_gas_in, scaling: per_run}
+      - {to: c4f8,           role: technosphere, unit: kg,  amount: "c4f8_mass_g / 1000",  unc: primary_gas_in, scaling: per_run}
+      - {to: o2_5n,          role: technosphere, unit: kg,  amount: "o2_mass_g / 1000",    unc: primary_gas_in, scaling: per_run}
+      - {to: ar_5n,          role: technosphere, unit: kg,  amount: "ar_mass_g / 1000",    unc: primary_gas_in, scaling: per_run}
+      - {to: helium,         role: technosphere, unit: kg,  amount: "he_mass_g / 1000",    unc: flat_tech, scaling: per_run}
+      - {to: bio_argon,      role: biosphere,    unit: kg,  amount: "ar_mass_g / 1000",    unc: flat_bio, scaling: per_run}
+      - {to: bio_sf6,        role: biosphere,    unit: kg,  amount: "sf6_mass_g / 1000 * gas_slip_fraction",  unc: primary_gas_emission, scaling: per_run, note: "SF6 slip past abatement (GWP100 24300)"}
+      - {to: bio_c4f8_proxy, role: biosphere,    unit: kg,  amount: "c4f8_mass_g / 1000 * gas_slip_fraction", unc: primary_gas_emission, scaling: per_run, note: "C4F8 slip, PROXIED by C2F6 (mass = C4F8 mass; CF = C2F6 12400 -> ~30% conservative over-estimate)"}
+
+  - id: thermal_oxidation
+    family: "Thermal"
+    label: "Thermal oxidation (hot-wall quartz furnace)"
+    source_step: "Wafer-bonding line: 1 um dry oxide, 900-1100 C"
+    batchable: true
+    note: "Grows oxide by CONSUMING the substrate -- a furnace/thermal step, not a deposition. Long holds make electricity the whole story; batch it (a tube furnace takes 25+ wafers)."
+    parameters:
+      - {name: furnace_power_kW, unit: kW, default: 15.0, about: "small hot-wall tube furnace (typical 5-20 kW)"}
+      - {name: oxidation_time_h, unit: h,  default: 10.0, about: "10 h dry oxidation -> ~1 um"}
+      - {name: o2_flow_sccm,     unit: sccm, default: 1000.0}
+      - {name: wafers_per_run, unit: "-", default: 1, about: "wafers sharing one tool/chamber run"}
+    flows:
+      - {to: elec,       role: technosphere, unit: kWh, amount: "furnace_power_kW * oxidation_time_h", unc: primary_electricity, scaling: per_run}
+      - {to: o2_5n,      role: technosphere, unit: kg,  amount: "o2_flow_sccm * oxidation_time_h * 60 * 1.429e-6", unc: primary_gas_in, scaling: per_run}
+      - {to: bio_oxygen, role: biosphere,    unit: kg,  amount: "o2_flow_sccm * oxidation_time_h * 60 * 1.429e-6", unc: primary_gas_emission, note: "near-total pass-through; only a trace is bound in the oxide", scaling: per_run}
+
+  - id: ald
+    family: "Deposition"
+    label: "ALD (atomic layer deposition, TMA + H2O -> Al2O3)"
+    source_step: "Wafer-bonding line: 10 nm Al2O3, 300 C, 100 cycles"
+    batchable: true
+    note: "Self-limiting, ~0.1 nm/cycle. Precursor utilisation is only ~3%, so nearly all the TMA is hydrolysed in the scrubber to Al(OH)3 + CH4 -- that, not the film, is the inventory."
+    parameters:
+      - {name: n_cycles,          unit: "-", default: 100, about: "10 nm at ~0.1 nm/cycle"}
+      - {name: tma_mg_per_cycle,  unit: mg,  default: 0.25}
+      - {name: water_mg_per_cycle, unit: mg, default: 0.141}
+      - {name: tma_unreacted,     unit: "-", default: 0.97, about: "fraction not incorporated -> scrubber"}
+      - {name: ar_flow_sccm,      unit: sccm, default: 150.0, about: "carrier/purge, continuous"}
+      - {name: tool_power_kW,     unit: kW,  default: 1.5}
+      - {name: process_time_min,  unit: min, default: 30.0}
+      - {name: wafers_per_run,  unit: "-", default: 1, about: "wafers sharing one tool/chamber run"}
+    flows:
+      - {to: elec,      role: technosphere, unit: kWh, amount: "tool_power_kW * process_time_min / 60", unc: primary_electricity, scaling: per_run}
+      - {to: tma,       role: technosphere, unit: kg,  amount: "n_cycles * tma_mg_per_cycle * 1e-6",    unc: flat_tech, scaling: per_run}
+      - {to: di_water,  role: technosphere, unit: kg,  amount: "n_cycles * water_mg_per_cycle * 1e-6",  unc: primary_liquid, scaling: per_run}
+      - {to: ar_5n,     role: technosphere, unit: kg,  amount: "ar_flow_sccm * process_time_min * 1.7823e-6", unc: primary_gas_in, scaling: per_run}
+      - {to: bio_argon, role: biosphere,    unit: kg,  amount: "ar_flow_sccm * process_time_min * 1.7823e-6", unc: flat_bio, note: "inert, 100% released", scaling: per_run}
+      - {to: bio_ch4,   role: biosphere,    unit: kg,  amount: "n_cycles * tma_mg_per_cycle * 1e-6 * 0.6677", unc: flat_bio, note: "3 CH4 per TMA: 3*16.04/72.09", scaling: per_run}
+      - {to: hw_incin,  role: technosphere, unit: kg,  amount: "-(n_cycles * tma_mg_per_cycle * 1e-6 * tma_unreacted * 1.0821)", unc: flat_tech, note: "unreacted TMA -> Al(OH)3 (78.00/72.09)", scaling: per_run}
+
+  - id: pvd_metal
+    family: "Deposition"
+    label: "PVD metal (sputter / e-beam evaporation)"
+    source_step: "10. W Sputter, 67. Metal deposition Ni+Au"
+    batchable: true
+    note: "Line-of-sight blanket deposition: metal consumed scales with WAFER AREA, not chip count. Add one step per metal in a stack (e.g. Ni then Au)."
+    parameters:
+      - {name: metal_type,    type: choice, default: Au, choices: [Ni, Au, W], about: "which metal is deposited"}
+      - {name: metal_mass_mg, unit: mg, default: 51.16, about: "blanket mass onto the wafer (Au 51.16, Ni 1.574 in the line)"}
+      - {name: tool_power_kW, unit: kW, default: 7.5, about: "source + vacuum + chiller"}
+      - {name: process_time_min, unit: min, default: 60.0}
+      - {name: wafers_per_run, unit: "-", default: 1, about: "wafers sharing one tool/chamber run"}
+    flows:
+      - {to_expr: "metals[metal_type]", role: technosphere, unit: kg,  amount: "metal_mass_mg * 1e-6 * area_factor", unc: flat_tech, note: "blanket deposition scales with wafer AREA", scaling: per_run}
+      - {to: elec,                      role: technosphere, unit: kWh, amount: "tool_power_kW * process_time_min / 60", unc: primary_electricity, scaling: per_run}
+
+  - id: ion_implantation
+    family: "Doping"
+    label: "Ion implantation (B / P / As)"
+    source_step: "Doping DB: Ion implantation, boron (BF3 source)"
+    batchable: false
+    note: "Dopant MASS is negligible (~1e-8 kg); electricity dominates. Implantation alone leaves the dopant INACTIVE -- add a Thermal > RTA step after it to activate and repair damage."
+    choice_defaults:
+      dopant_type:
+        B_BF3:   {gas_mw: 67.81}
+        P_PH3:   {gas_mw: 34.00}
+        As_AsH3: {gas_mw: 77.95}
+    parameters:
+      - {name: dopant_type, type: choice, default: B_BF3, choices: [B_BF3, P_PH3, As_AsH3],
+         about: "B via BF3, P via PH3 (dedicated Phosphine dataset), As via arsine. Selecting one sets the source-gas molar mass automatically"}
+      - {name: tool_power_kW,  unit: kW,  default: 50.0, about: "whole tool: source, extraction, analyser magnet, acceleration column, end station, cryo/turbo pumps, chiller"}
+      - {name: time_per_wafer_min, unit: min, default: 2.0, about: "implant + load/unload. Production tool at 200 wafers/h would be ~0.3"}
+      - {name: source_gas_sccm, unit: sccm, default: 3.0, about: "source-gas feed; beam utilisation is well under 1%"}
+      - {name: gas_mw,         unit: g/mol, default: 67.81, about: "BF3 67.81 / PH3 34.00 / AsH3 77.95 -- used with the GAS-phase density MW/22414"}
+      - {name: n2_vent_g,      unit: g,   default: 0.175, about: "load-lock vent, 1 cycle"}
+      - {name: graphite_g,     unit: g,   default: 0.2,  about: "beamline consumables, amortised per wafer"}
+    flows:
+      - {to: elec,     role: technosphere, unit: kWh, amount: "tool_power_kW * time_per_wafer_min / 60", unc: primary_electricity}
+      - {to_expr: "implant_sources[dopant_type]", role: technosphere, unit: kg,
+         amount: "source_gas_sccm * time_per_wafer_min * gas_mw / 22414.0 / 1000.0", unc: primary_gas_in,
+         note: "sccm x min x (MW/22414) g/cm3 -> kg; GAS-phase density"}
+      - {to: n2_5n,    role: technosphere, unit: kg,  amount: "n2_vent_g / 1000",  unc: primary_gas_in}
+      - {to: bio_n2,   role: biosphere,    unit: kg,  amount: "n2_vent_g / 1000",  unc: flat_bio}
+      - {to: graphite, role: technosphere, unit: kg,  amount: "graphite_g / 1000", unc: flat_tech}
+      - {to: hw_incin, role: technosphere, unit: kg,  amount: "-graphite_g * 2.5 / 1000", unc: flat_tech, note: "spent graphite/source parts"}
+
+  - id: rinse
+    family: "Cleaning"
+    label: "Rinse / clean (DI water + IPA + acetone + N2, any combination)"
+    source_step: "47. Final rinsing; 8. ACE+IPA strip; 53. IPA wiping"
+    batchable: true
+    note: "Set to 0 whatever you do not use. ACETONE IS NOT A RINSE -- it is a solvent strip that leaves residue as it dries, so it MUST be followed by IPA (the classic acetone -> IPA -> DI -> N2 sequence). Wipes are for wiping, never for rinsing."
+    parameters:
+      - {name: di_water_kg,   unit: kg, default: 10.1, about: "immersion rinse tank, shared over bath life. 0 = no water rinse"}
+      - {name: ipa_mass_g,    unit: g,  default: 165.0, about: "IPA displacement rinse -- prevents watermarks; per wafer, 100% volatilises"}
+      - {name: acetone_mass_g, unit: g, default: 0.0,  about: "solvent pre-strip. MUST be followed by IPA. Part volatilises, rest to solvent waste"}
+      - {name: acetone_evap_fraction, unit: "-", default: 0.333}
+      - {name: n2_mass_g,     unit: g,  default: 31.25, about: "N2 gun blow-dry: ~50 L/min x ~30 s = 25 L x 1.2504 g/L (GAS density)"}
+      - {name: wipe_mass_g,   unit: g,  default: 0.0,  about: "cleanroom wipes, only if wiping (e.g. an IPA wipe-down)"}
+      - {name: tool_power_kW, unit: kW, default: 1.06, about: "bench / megasonic / dehydration"}
+      - {name: process_time_min, unit: min, default: 15.0}
+      - {name: wafers_per_bath, unit: "-", default: 1, about: "wafers before the tank/solvent is refreshed"}
+      - {name: wafers_per_run,  unit: "-", default: 1, about: "wafers processed together in one tool run"}
+    flows:
+      - {to: di_water,             role: technosphere, unit: kg,  amount: "di_water_kg",            unc: primary_liquid, scaling: per_bath}
+      - {to: neutralization_water, role: technosphere, unit: kg,  amount: "-di_water_kg",           unc: primary_liquid, scaling: per_bath}
+      - {to: ipa,                  role: technosphere, unit: kg,  amount: "ipa_mass_g / 1000",      unc: solvent_tech}
+      - {to: bio_ipa,              role: biosphere,    unit: kg,  amount: "ipa_mass_g / 1000",      unc: solvent_bio, note: "100% volatilises"}
+      - {to: acetone,              role: technosphere, unit: kg,  amount: "acetone_mass_g / 1000",  unc: solvent_tech, scaling: per_bath}
+      - {to: bio_acetone,          role: biosphere,    unit: kg,  amount: "acetone_mass_g / 1000 * acetone_evap_fraction", unc: solvent_bio, scaling: per_bath}
+      - {to: spent_solvent_tx,     role: technosphere, unit: kg,  amount: "-acetone_mass_g / 1000 * (1 - acetone_evap_fraction)", unc: flat_tech, scaling: per_bath}
+      - {to: n2_5n,                role: technosphere, unit: kg,  amount: "n2_mass_g / 1000",       unc: primary_gas_in}
+      - {to: bio_n2,               role: biosphere,    unit: kg,  amount: "n2_mass_g / 1000",       unc: flat_bio}
+      - {to: textile_wipe,         role: technosphere, unit: kg,  amount: "wipe_mass_g / 1000",     unc: flat_tech}
+      - {to: msw,                  role: technosphere, unit: kg,  amount: "-wipe_mass_g / 1000",    unc: flat_tech}
+      - {to: elec,                 role: technosphere, unit: kWh, amount: "tool_power_kW * process_time_min / 60", unc: primary_electricity, scaling: per_run}
+
+  - id: mocvd_epitaxy
+    family: "Deposition"
+    label: "MOCVD / RP-CVD epitaxy (III-V, Ge, GeSn)"
+    source_step: "MOCVD InGaAs PIN deposition, TASE (iii_v_precursors)"
+    batchable: true
+    note: "Metalorganic vapour-phase epitaxy. Enter precursor masses from your recipe MFC integrals (sccm x min x density). Reactor power and the group-V precursor usually dominate. Defaults = the InGaAs TASE run; wafers_per_run is the big lever (a planetary reactor takes 6+)."
+    parameters:
+      - {name: group3_type,   type: choice, default: TMIn, choices: [TMIn, TMGa], about: "group-III metalorganic source"}
+      - {name: group3_mass_g, unit: g, default: 0.178, about: "group-III precursor consumed over the recipe"}
+      - {name: group5_type,   type: choice, default: TBAs, choices: [TBAs, TBP], about: "group-V source"}
+      - {name: group5_mass_g, unit: g, default: 8.67,  about: "group-V precursor -- usually the dominant mass (high V/III ratio)"}
+      - {name: reactor_power_kW, unit: kW, default: 100.0, about: "planetary MOCVD reactor: heating, rotation, vacuum, scrubber"}
+      - {name: growth_time_min, unit: min, default: 70.4, about: "full recipe: anneal + growth + flush"}
+      - {name: h2_carrier_g,  unit: g, default: 20.69, about: "H2 alkyl carrier, released to air"}
+      - {name: organic_c_fraction, unit: "-", default: 0.36, about: "carbon mass fraction of the precursors reaching POU abatement"}
+      - {name: hw_waste_g,    unit: g, default: 4.644, about: "scrubber organometallic residues"}
+      - {name: wafers_per_run, unit: "-", default: 1, about: "wafers per reactor load"}
+    flows:
+      - {to_expr: "mocvd_precursors[group3_type]", role: technosphere, unit: kg, amount: "group3_mass_g / 1000", unc: flat_tech}
+      - {to_expr: "mocvd_precursors[group5_type]", role: technosphere, unit: kg, amount: "group5_mass_g / 1000", unc: flat_tech}
+      - {to: elec,     role: technosphere, unit: kWh, amount: "reactor_power_kW * growth_time_min / 60", unc: primary_electricity, scaling: per_run}
+      - {to: h2,       role: technosphere, unit: kg,  amount: "h2_carrier_g / 1000", unc: primary_gas_in, scaling: per_run}
+      - {to: bio_h2,   role: biosphere,    unit: kg,  amount: "h2_carrier_g / 1000", unc: flat_bio, scaling: per_run, note: "carrier released to air"}
+      - {to: bio_co2,  role: biosphere,    unit: kg,  amount: "(group3_mass_g + group5_mass_g) / 1000 * organic_c_fraction * 3.664", unc: flat_bio, note: "organic C -> CO2 via POU abatement (44/12)"}
+      - {to: hw_incin, role: technosphere, unit: kg,  amount: "-hw_waste_g / 1000", unc: flat_tech, note: "scrubber residues"}
+
+  - id: cmp
+    family: "Etch"
+    label: "CMP (chemical-mechanical polishing)"
+    source_step: "generic fab CMP -- not present in the TASE line"
+    batchable: false
+    note: "Slurry-fed mechanical planarisation. Slurry volume and pad wear dominate the material side; the polisher is only a few kW. Slurry is single-pass in most fabs (not recirculated). Waste is mass-balanced automatically."
+    parameters:
+      - {name: slurry_L,       unit: L,  default: 1.25, about: "colloidal silica/alumina slurry dispensed per wafer (1.25 L x 1.20 = 1.5 kg)"}
+      - {name: koh_mass_g,     unit: g,  default: 15.0, about: "pH adjuster / oxidiser in the slurry"}
+      - {name: di_water_L,     unit: L,  default: 30.0, about: "post-CMP megasonic clean + pad conditioning"}
+      - {name: pad_mass_g,     unit: g,  default: 8.0,  about: "polyurethane pad wear, amortised per wafer"}
+      - {name: polish_time_min, unit: min, default: 3.0}
+      - {name: tool_power_kW,  unit: kW, default: 6.0, advanced: true, about: "NAMEPLATE: platen + carrier + conditioner + slurry delivery"}
+    flows:
+      - {to: silica_slurry,        role: technosphere, unit: kg,  amount: "slurry_L * rho['slurry']", unc: primary_liquid}
+      - {to: koh,                  role: technosphere, unit: kg,  amount: "koh_mass_g / 1000",  unc: primary_liquid}
+      - {to: di_water,             role: technosphere, unit: kg,  amount: "di_water_L * rho['water']", unc: primary_liquid}
+      - {to: neutralization_water, role: technosphere, unit: kg,  amount: "-(di_water_L * rho['water'] + slurry_L * rho['slurry'] + koh_mass_g/1000)", unc: primary_liquid, note: "whole aqueous stream, mass-balanced"}
+      - {to: polish_pad,           role: technosphere, unit: kg,  amount: "pad_mass_g / 1000",  unc: flat_tech}
+      - {to: msw,                  role: technosphere, unit: kg,  amount: "-pad_mass_g / 1000", unc: flat_tech}
+      - {to: elec,                 role: technosphere, unit: kWh, amount: "tool_power_kW * polish_time_min / 60", unc: primary_electricity}
+
+  # ===================== BONDING / INTEGRATION =====================
+  # The three routes for putting III-V onto Si. They differ above all in HOW MUCH
+  # III-V is consumed per target wafer -- set iii_v_area_m2 to compare them fairly.
+  # A full 150 mm wafer = 0.0176715 m2.
+
+  - id: wafer_bonding
+    family: "Bonding"
+    label: "Wafer-to-wafer bonding (III-V on Si)"
+    source_step: "Bonding DB: Wafer-to-wafer bonding, III-V on Si"
+    batchable: true
+    note: "DIRECT (molecular) bonding by default, as in the PSI flow: oxide + ALD interface, O2-plasma activation, hydration rinse, then a thermocompression anneal -- NO adhesive. Set adhesive_g > 0 only for DVS-BCB adhesive bonding. Consumes an ENTIRE III-V wafer whatever the device coverage; follow with Etch > InP substrate removal. For the complete PSI sequence load the standard flow instead of using this single step."
+    parameters:
+      - {name: iii_v_area_m2,  unit: m2, default: 0.0176715, about: "III-V donor consumed. Default = one full 150 mm wafer (that is the point of W2W)"}
+      - {name: adhesive_g,     unit: g,  default: 0.0, about: "DVS-BCB dispensed for ADHESIVE bonding. 0 = direct/molecular bonding (the PSI route)"}
+      - {name: bonder_power_kW, unit: kW, default: 8.0, about: "vacuum pumps + heaters (250-350 C) + press"}
+      - {name: bond_cycle_min, unit: min, default: 120.0, about: "pump-down + ramp + hold + cool"}
+      - {name: n2_ambient_g,   unit: g,  default: 5.0}
+      - {name: wafers_per_run, unit: "-", default: 1, about: "bond pairs per tool cycle"}
+    flows:
+      - {to: inp_wafer,    role: technosphere, unit: m2,  amount: "iii_v_area_m2",         unc: flat_tech}
+      - {to: elec,         role: technosphere, unit: kWh, amount: "bonder_power_kW * bond_cycle_min / 60", unc: primary_electricity, scaling: per_run}
+      - {to: bcb_adhesive, role: technosphere, unit: kg,  amount: "adhesive_g / 1000",     unc: flat_tech}
+      - {to: hw_incin,     role: technosphere, unit: kg,  amount: "-adhesive_g * 0.9 / 1000", unc: flat_tech, note: "spun-off BCB"}
+      - {to: n2_5n,        role: technosphere, unit: kg,  amount: "n2_ambient_g / 1000",   unc: primary_gas_in, scaling: per_run}
+      - {to: bio_n2,       role: biosphere,    unit: kg,  amount: "n2_ambient_g / 1000",   unc: flat_bio, scaling: per_run}
+
+  - id: die_bonding
+    family: "Bonding"
+    label: "Die-to-wafer bonding (pick & place, AuSn)"
+    source_step: "Bonding DB: Die-to-wafer bonding, III-V dies on Si"
+    batchable: false
+    note: "SERIAL: one die at a time with sub-micron photonic alignment, so tool time scales with die COUNT. Material-efficient vs W2W, but throughput is the weak point -- that is the gap transfer printing fills."
+    parameters:
+      - {name: n_dies,          unit: "-",  default: 32, about: "dies placed per target wafer"}
+      - {name: die_area_mm2,    unit: mm2,  default: 4.0, about: "e.g. a 2x2 mm laser die"}
+      - {name: donor_utilisation, unit: "-", default: 0.5, about: "usable fraction of the donor wafer (dicing streets, edge exclusion, test structures)"}
+      - {name: time_per_die_s,  unit: s,    default: 45.0, about: "pick, align (sub-um), place, reflow"}
+      - {name: bonder_power_kW, unit: kW,   default: 3.0}
+      - {name: au_mg_per_die,   unit: mg,   default: 0.14, about: "Au in the AuSn eutectic (80 wt%); dominates the solder impact"}
+      - {name: sn_mg_per_die,   unit: mg,   default: 0.034, about: "Sn in the AuSn eutectic (20 wt%)"}
+      - {name: flux_mg_per_die, unit: mg,   default: 0.2}
+      - {name: n2_ambient_g,    unit: g,    default: 2.0}
+    flows:
+      - {to: inp_wafer,    role: technosphere, unit: m2,  amount: "n_dies * die_area_mm2 * 1e-6 / donor_utilisation", unc: flat_tech, note: "III-V = die area / donor utilisation"}
+      - {to: elec,         role: technosphere, unit: kWh, amount: "bonder_power_kW * n_dies * time_per_die_s / 3600", unc: primary_electricity}
+      - {to: gold_solder,  role: technosphere, unit: kg,  amount: "n_dies * au_mg_per_die * 1e-6", unc: flat_tech}
+      - {to: tin_solder,   role: technosphere, unit: kg,  amount: "n_dies * sn_mg_per_die * 1e-6", unc: flat_tech}
+      - {to: solder_flux,  role: technosphere, unit: kg,  amount: "n_dies * flux_mg_per_die * 1e-6", unc: flat_tech}
+      - {to: n2_5n,        role: technosphere, unit: kg,  amount: "n2_ambient_g / 1000", unc: primary_gas_in}
+      - {to: bio_n2,       role: biosphere,    unit: kg,  amount: "n2_ambient_g / 1000", unc: flat_bio}
+
+  - id: transfer_printing
+    family: "Bonding"
+    label: "Micro-transfer printing (PDMS stamp, III-V coupons)"
+    source_step: "Bonding DB: Micro-transfer printing, III-V coupons on Si"
+    batchable: false
+    note: "MASSIVELY PARALLEL: hundreds of coupons per print cycle, and only the coupon volume leaves the donor -- by far the most III-V-efficient route. Needs a sacrificial release etch first (Generic > HF dip). Donor reuse is NOT credited here (conservative)."
+    parameters:
+      - {name: n_coupons,        unit: "-", default: 100, about: "coupons printed per target wafer"}
+      - {name: coupon_area_mm2,  unit: mm2, default: 0.5, about: "a uTP coupon is small and only microns thick"}
+      - {name: donor_utilisation, unit: "-", default: 0.6}
+      - {name: coupons_per_print, unit: "-", default: 100, about: "stamp posts per print cycle -- the throughput lever"}
+      - {name: print_cycle_s,    unit: s,   default: 60.0}
+      - {name: tool_power_kW,    unit: kW,  default: 2.0}
+      - {name: stamp_mg_per_print, unit: mg, default: 0.5, about: "PDMS stamp wear: a ~5 g stamp amortised over ~10,000 prints"}
+      - {name: n2_ambient_g,     unit: g,   default: 0.5}
+    flows:
+      - {to: inp_wafer,   role: technosphere, unit: m2,  amount: "n_coupons * coupon_area_mm2 * 1e-6 / donor_utilisation", unc: flat_tech, note: "only the coupon area leaves the donor"}
+      - {to: elec,        role: technosphere, unit: kWh, amount: "tool_power_kW * (n_coupons / coupons_per_print) * print_cycle_s / 3600", unc: primary_electricity}
+      - {to: pdms_stamp,  role: technosphere, unit: kg,  amount: "(n_coupons / coupons_per_print) * stamp_mg_per_print * 1e-6", unc: flat_tech}
+      - {to: n2_5n,       role: technosphere, unit: kg,  amount: "n2_ambient_g / 1000", unc: primary_gas_in}
+      - {to: bio_n2,      role: biosphere,    unit: kg,  amount: "n2_ambient_g / 1000", unc: flat_bio}
+
+# =====================================================================
+# Standard process flows: click one and the whole step sequence loads,
+# already parameterised. Each entry is just an ordered list of steps
+# from `templates:` above -- edit any parameter afterwards as usual.
+# =====================================================================
+process_flows:
+  - id: flow_wafer_bonding_psi
+    label: "Wafer bonding, InP-on-Si (direct/molecular) -- PSI flow"
+    about: "The technician's actual 6-step sequence: grow the bonding oxide on Si, ALD alumina interface on InP, O2-plasma activate, hydration rinse, 240 C thermocompression anneal, then etch the InP donor away. Consumes a WHOLE InP wafer -- add Substrate > InP separately to count the donor."
+    steps:
+      - {step_type: thermal_oxidation,   params: {furnace_power_kW: 15.0, oxidation_time_h: 10.0}}
+      - {step_type: ald,                 params: {n_cycles: 100}}
+      - {step_type: o2_plasma_treatment, params: {process_time_min: 5.0, o2_slip_fraction: 1.0, organic_co2_g: 0.0}}
+      - {step_type: rinse,               params: {di_water_kg: 1.9, ipa_mass_g: 0.0, acetone_mass_g: 0.0, n2_mass_g: 31.25}}
+      - {step_type: hotplate_bake,       params: {heater_power_kW: 0.8, bake_time_min: 120.0, voc_mass_g: 0.0}}
+      - {step_type: wet_etch,            params: {etchant_type: HF_structural, etchant_mass_g: 500.0}}
+
+  - id: flow_litho_optical
+    label: "Optical lithography block (prime -> coat -> bake -> expose -> develop)"
+    about: "The standard i-line patterning module on a mask aligner."
+    steps:
+      - {step_type: hmds_prime,       params: {}}
+      - {step_type: spin_coating,     params: {resist_type: AZ1512}}
+      - {step_type: hotplate_bake,    params: {heater_power_kW: 1.1, bake_time_min: 1.5, voc_mass_g: 0.94}}
+      - {step_type: optical_exposure, params: {}}
+      - {step_type: development,      params: {developer_type: AZ400K}}
+
+  - id: flow_litho_ebeam
+    label: "E-beam lithography block (coat -> write -> develop -> descum)"
+    about: "PMMA e-beam patterning. The write step dominates energy -- set exposure_time_h from your real pattern area and dose."
+    steps:
+      - {step_type: spin_coating,        params: {resist_type: PMMA}}
+      - {step_type: hotplate_bake,       params: {heater_power_kW: 1.1, bake_time_min: 3.0, voc_mass_g: 0.5}}
+      - {step_type: ebeam_exposure,      params: {}}
+      - {step_type: development,         params: {developer_type: MIBK_IPA}}
+      - {step_type: o2_plasma_treatment, params: {process_time_min: 0.5, organic_co2_g: 0.05}}
+
+  - id: flow_pattern_transfer
+    label: "Pattern transfer (RIE etch -> resist strip -> clean)"
+    about: "Dry-etch the pattern into the underlying film, then remove the mask."
+    steps:
+      - {step_type: rie_etch,            params: {}}
+      - {step_type: resist_strip,        params: {}}
+      - {step_type: o2_plasma_treatment, params: {process_time_min: 5.0, organic_co2_g: 2.753, ar_carrier_g: 1.2}}
+      - {step_type: rinse,               params: {}}
+
+  - id: flow_preclean_epi
+    label: "Pre-epitaxy clean (piranha -> HF dip -> MOCVD growth)"
+    about: "Surface preparation immediately before epitaxial growth: organics off with piranha, chemical oxide off with HF, then load within minutes."
+    steps:
+      - {step_type: piranha_clean,  params: {hotplate_power_kW: 1.0, heat_time_min: 12.0}}
+      - {step_type: hf_dip,         params: {}}
+      - {step_type: mocvd_epitaxy,  params: {}}
+
+  - id: flow_doping_implant
+    label: "Doping by ion implantation (implant -> activation anneal)"
+    about: "Implantation alone leaves the dopant electrically INACTIVE -- the RTA repairs the lattice damage and moves dopants onto substitutional sites. Never use the implant without it."
+    steps:
+      - {step_type: ion_implantation, params: {dopant_type: B_BF3}}
+      - {step_type: rta_anneal,       params: {}}
+
+  - id: flow_doping_spin_on
+    label: "Doping by spin-on dopant (apply -> cap -> drive-in -> strip cap)"
+    about: "The furnace-diffusion alternative to implantation, as used in the TASE line (steps 27-30)."
+    steps:
+      - {step_type: doping_spin_on, params: {}}
+      - {step_type: pecvd,          params: {}}
+      - {step_type: rta_anneal,     params: {}}
+      - {step_type: wet_etch,       params: {etchant_type: BOE, etchant_mass_g: 1500.0}}
+
+  - id: flow_metallization_liftoff
+    label: "Metallisation by lift-off (coat -> write -> develop -> HF dip -> evaporate -> lift-off)"
+    about: "The TASE contact module (steps 61-68): pattern a resist stencil, strip the native oxide, evaporate the metal stack, then dissolve the resist to leave metal only in the openings."
+    steps:
+      - {step_type: spin_coating,   params: {resist_type: PMMA}}
+      - {step_type: ebeam_exposure, params: {exposure_time_h: 4.64}}
+      - {step_type: development,    params: {developer_type: MIBK_IPA}}
+      - {step_type: hf_dip,         params: {hf_mass_g: 0.1, di_water_kg: 1.0, neutralization_hf_kg: 0.1, neutralization_water_kg: 1.0}}
+      - {step_type: pvd_metal,      params: {metal_type: Au}}
+      - {step_type: rinse,          params: {acetone_mass_g: 791.0, ipa_mass_g: 15.7, di_water_kg: 0.0}}
+
+  - id: flow_integration_utp
+    label: "Integration by micro-transfer printing (release -> print)"
+    about: "Free the coupons from the donor with a sacrificial etch, then print them onto Si. The most III-V-efficient integration route."
+    steps:
+      - {step_type: hf_dip,            params: {}}
+      - {step_type: transfer_printing, params: {}}
+
+  - id: flow_integration_d2w
+    label: "Integration by die-to-wafer bonding (dice -> pick & place)"
+    about: "Singulate the III-V dies, then place them one by one with sub-micron alignment. Material-efficient but SERIAL -- tool time scales with die count."
+    steps:
+      - {step_type: dicing,      params: {}}
+      - {step_type: die_bonding, params: {}}
+

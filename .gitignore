@@ -1,0 +1,21 @@
+# machine-specific (written by setup_project.py on each install)
+linebuilder_config.json
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# NEVER commit ecoinvent data (licensed, must not be redistributed)
+ecoinvent*/
+*.spold
+*ecoSpold*
+datasets/

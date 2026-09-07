@@ -1,0 +1,8 @@
+# pip alternative to environment.yml.
+# NOTE: installing the legacy Brightway2 stack via pip can be fiddly (numpy/scipy
+# build steps). If you hit trouble, use the conda route in environment.yml, or
+# reuse the environment you already run Activity Browser in.
+brightway2==2.4.6
+Flask>=2.0
+PyYAML>=5.4
+XlsxWriter>=3.0

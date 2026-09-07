@@ -1,0 +1,13 @@
+# Recommended install: a self-contained conda environment with the legacy
+# Brightway2 stack that LineBuilder needs.
+#   conda env create -f environment.yml
+#   conda activate linebuilder
+name: linebuilder
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - brightway2=2.4.*      # legacy Brightway (bw2data 3.x / bw2calc 1.x / bw2io 0.8.x)
+  - flask>=2.0
+  - pyyaml>=5.4
+  - xlsxwriter>=3.0
