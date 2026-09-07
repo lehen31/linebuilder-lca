@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LineBuilder — cleanroom process line → carbon footprint</title>
+<meta name="description" content="A local tool to assemble a semiconductor / photonics cleanroom process line and compute its cradle-to-gate carbon footprint with Brightway2 and ecoinvent.">
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#ffffff; --ink:#12212f; --ink2:#546073; --line:#e2e8f2;
+    --accent:#1766c9; --accent2:#12a3a3; --code:#0f1b28; --codetx:#dbe7f5;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0d151e; --card:#141f2b; --ink:#eaf1f9; --ink2:#9fb0c3; --line:#243444;
+    --accent:#4d9bf0; --accent2:#39c9c9; --code:#0a121b; --codetx:#cfe0f2;
+  }}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto;padding:0 22px}
+  header.hero{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+    padding:66px 0 58px;text-align:center}
+  header.hero .wrap{max-width:760px}
+  .badge{display:inline-block;font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+    background:rgba(255,255,255,.16);padding:5px 12px;border-radius:999px;margin-bottom:18px}
+  h1{font-size:2.5rem;line-height:1.12;margin:0 0 14px;font-weight:800}
+  .lede{font-size:1.16rem;opacity:.95;margin:0 auto 26px;max-width:640px}
+  .cta{display:inline-flex;gap:9px;align-items:center;background:#fff;color:#123;
+    font-weight:700;padding:12px 22px;border-radius:10px;margin:6px}
+  .cta.ghost{background:rgba(255,255,255,.14);color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.5)}
+  section{padding:52px 0}
+  h2{font-size:1.55rem;margin:0 0 6px;font-weight:750}
+  .sub{color:var(--ink2);margin:0 0 26px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .card h3{margin:0 0 7px;font-size:1.06rem}
+  .card p{margin:0;color:var(--ink2);font-size:.96rem}
+  .steps{counter-reset:s;display:grid;gap:14px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px 16px 56px;position:relative}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;left:16px;top:16px;
+    width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;
+    display:grid;place-items:center;font-size:.92rem}
+  .step b{display:block;margin-bottom:2px}
+  .step p{margin:0;color:var(--ink2);font-size:.95rem}
+  pre{background:var(--code);color:var(--codetx);border-radius:12px;padding:16px 18px;overflow-x:auto;
+    font:13.5px/1.7 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  .note{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent2);
+    border-radius:0 10px 10px 0;padding:14px 18px;color:var(--ink2);font-size:.95rem}
+  footer{border-top:1px solid var(--line);padding:30px 0 46px;color:var(--ink2);font-size:.9rem}
+  .center{text-align:center}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="badge">Brightway2 · ecoinvent 3.12 · EF 3.1 GWP100</span>
+    <h1>LineBuilder</h1>
+    <p class="lede">Assemble a semiconductor &amp; photonics cleanroom process line, step by
+      step, and get its cradle-to-gate <strong>carbon footprint</strong> — computed locally
+      on your own machine.</p>
+    <a class="cta" href="https://github.com/lehen31/linebuilder-lca">★ View on GitHub</a>
+    <a class="cta ghost" href="https://github.com/lehen31/linebuilder-lca#readme">Install guide</a>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>What it does</h2>
+    <p class="sub">Pick a wafer, load a standard flow or add steps one by one, choose your
+      electricity grid — and see the GWP, broken down by step.</p>
+    <div class="grid">
+      <div class="card"><h3>29 process templates</h3><p>Lithography, etch, cleaning,
+        deposition (MOCVD / ALD / PECVD / PVD), doping, thermal, bonding, dicing and more —
+        each fully parameterised.</p></div>
+      <div class="card"><h3>Real wafer formats</h3><p>Si, SOI, InP and Ge in their actual
+        SEMI diameters and coupled thicknesses. No impossible substrates.</p></div>
+      <div class="card"><h3>Grid &amp; voltage</h3><p>Switch the electricity supply across
+        11 regions and MV/HV — the single biggest lever in a cleanroom line.</p></div>
+      <div class="card"><h3>Auditable</h3><p>Every run is a real Brightway inventory you can
+        open in Activity Browser and export to Excel. No black box.</p></div>
+      <div class="card"><h3>10 standard flows</h3><p>Litho blocks, pattern transfer, doping,
+        metallisation lift-off, wafer bonding and the integration routes — one click.</p></div>
+      <div class="card"><h3>Custom material chains</h3><p>Bundled foreground datasets for the
+        III-V and Ge chains, precursors and sputter targets that ecoinvent lacks.</p></div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="sub">It runs entirely on your computer — nothing is uploaded. GitHub only hosts the code.</p>
+    <div class="steps">
+      <div class="step"><b>You bring ecoinvent</b><p>Supply your own licensed ecoinvent 3.12
+        cutoff. It is never shipped here — the tool only references it.</p></div>
+      <div class="step"><b>Set up the project once</b><p><code>setup_project.py</code> builds a
+        Brightway project and imports the bundled dataset library, then verifies every link.</p></div>
+      <div class="step"><b>Run &amp; compute</b><p><code>python app.py</code> → open your browser
+        → build a line → get the footprint and the per-step hotspots.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Get started</h2>
+    <p class="sub">Full details in the <a href="https://github.com/lehen31/linebuilder-lca#readme">README</a>.</p>
+<pre>git clone https://github.com/lehen31/linebuilder-lca.git
+cd linebuilder-lca
+conda env create -f environment.yml
+conda activate linebuilder
+python setup_project.py --project LineBuilder --ecoinvent "PATH\to\ecoinvent\datasets"
+python app.py        # then open http://127.0.0.1:5000</pre>
+    <p class="note"><strong>Requires:</strong> conda (Python) and your own <strong>ecoinvent
+      3.12 cutoff</strong> license. Already run Activity Browser with ecoinvent imported? Point
+      <code>--project</code> at that project and skip the ecoinvent import.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap center">
+    LineBuilder — MIT licensed. ecoinvent is licensed separately by
+    <a href="https://ecoinvent.org">ecoinvent</a> and is not included.<br>
+    <a href="https://github.com/lehen31/linebuilder-lca">github.com/lehen31/linebuilder-lca</a>
+  </div>
+</footer>
+
+</body>
+</html>
