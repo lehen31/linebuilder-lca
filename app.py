@@ -7,6 +7,23 @@ import linebuilder_core as core
 
 app = Flask(__name__)
 
+# Optional password protection (HTTP Basic Auth). Set the LINEBUILDER_PASSWORD env var
+# to require a password on every request -- use this whenever you expose the app through
+# a tunnel. If it is unset, the app is open (normal local use is unchanged).
+_PW = os.environ.get("LINEBUILDER_PASSWORD")
+
+
+@app.before_request
+def _require_password():
+    if not _PW:
+        return None                      # no password configured -> local, open
+    auth = request.authorization
+    if auth and auth.password == _PW:
+        return None                      # correct password -> allow
+    return Response("Authentication required.", 401,
+                    {"WWW-Authenticate": 'Basic realm="LineBuilder"'})
+
+
 PAGE = r"""<!doctype html><html><head><meta charset="utf-8"><title>LineBuilder — GWP</title>
 <style>
  :root{
