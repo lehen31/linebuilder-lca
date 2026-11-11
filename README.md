@@ -56,6 +56,14 @@ git clone https://github.com/<your-user>/linebuilder-lca.git
 cd linebuilder-lca
 ```
 
+### Option C — one-click installer (no conda)
+
+For people who don't use conda or Brightway: `installer/pack.sh` builds `LineBuilder-Mac.zip` and
+`LineBuilder-Windows.zip`. The user double-clicks **Install LineBuilder**, which sets up its own Python and
+Brightway2 inside the folder and then asks for ecoinvent 3.12 cutoff: the `.7z` download, its unpacked folder, or
+an existing Activity Browser 2 project. After that, **Start LineBuilder** opens the tool. See
+[installer/README.md](installer/README.md).
+
 ---
 
 ## Set up the Brightway project (once)

@@ -1,0 +1,1036 @@
+[
+ {
+  "code": "e91093c9-20df-49c5-8960-eabf05af6832",
+  "name": "Acetone",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-64-1"
+ },
+ {
+  "code": "7a2d7097-20c4-4b5f-b2ee-bcfc2ba1378f",
+  "name": "Acetone",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-64-1"
+ },
+ {
+  "code": "f3d5fd96-8805-4d3d-867a-5df27975b07f",
+  "name": "Acetone",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-64-1"
+ },
+ {
+  "code": "1f130425-11f9-4ec2-8d2f-d282acaacf5c",
+  "name": "Acetone",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-64-1"
+ },
+ {
+  "code": "d60f27da-703f-4c04-bad4-7e978a375205",
+  "name": "Acetone",
+  "categories": [
+   "water",
+   "ground-"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-64-1"
+ },
+ {
+  "code": "f2cdedb9-7723-4308-b2ef-ad20c93018af",
+  "name": "Acetone",
+  "categories": [
+   "water",
+   "ground-, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-64-1"
+ },
+ {
+  "code": "62ebd5d6-153a-463d-88c0-9fee5658d316",
+  "name": "Acetone",
+  "categories": [
+   "water",
+   "ocean"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-64-1"
+ },
+ {
+  "code": "0e8f17d0-3e52-4f6f-bef9-60f6007a7aab",
+  "name": "Acetone",
+  "categories": [
+   "water",
+   "surface water"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-64-1"
+ },
+ {
+  "code": "d78a3d22-4bed-4ad3-8a9c-1cc4645188d0",
+  "name": "Acetone",
+  "categories": [
+   "water",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-64-1"
+ },
+ {
+  "code": "2b50f643-216a-412b-a0e5-5946867aa2ed",
+  "name": "Ammonia",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007664-41-7"
+ },
+ {
+  "code": "0f440cc0-0f74-446d-99d6-8ff0e97a2444",
+  "name": "Ammonia",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007664-41-7"
+ },
+ {
+  "code": "87883a4e-1e3e-4c9d-90c0-f1bea36f8014",
+  "name": "Ammonia",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007664-41-7"
+ },
+ {
+  "code": "9990b51b-7023-4700-bca0-1a32ef921f74",
+  "name": "Ammonia",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007664-41-7"
+ },
+ {
+  "code": "b9660786-7a4e-408f-9474-f58877b329a6",
+  "name": "Ammonia",
+  "categories": [
+   "soil",
+   "industrial"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007664-41-7"
+ },
+ {
+  "code": "38321e66-f6ab-4908-b26f-c17267559bc5",
+  "name": "Argon",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007440-37-1"
+ },
+ {
+  "code": "8b46f615-69c9-4ca3-815e-a7bde116d202",
+  "name": "Argon",
+  "categories": [
+   "natural resource",
+   "in air"
+  ],
+  "unit": "kg",
+  "type": "natural resource",
+  "CAS number": "007440-37-1"
+ },
+ {
+  "code": "ed751c30-a896-44f3-9a83-2a5328dde94d",
+  "name": "Arsenic ion",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "7348af7c-e102-4a03-a0df-efce16469eed",
+  "name": "Arsenic ion",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "dc6dbdaa-9f13-43a8-8af5-6603688c6ad0",
+  "name": "Arsenic ion",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "f4d0a2c8-efef-4188-85da-5801097389a2",
+  "name": "Arsenic ion",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "4673a799-36a5-4359-ac6a-fa933281bc93",
+  "name": "Arsenic ion",
+  "categories": [
+   "soil",
+   "agricultural"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "1e19d86e-968d-4428-984f-70bfd843a8f4",
+  "name": "Arsenic ion",
+  "categories": [
+   "soil",
+   "forestry"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "ebc4c2a3-c004-4053-8048-f41fdd9324c8",
+  "name": "Arsenic ion",
+  "categories": [
+   "soil",
+   "industrial"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "fc84887d-158e-4067-80dc-9743165bd70d",
+  "name": "Arsenic ion",
+  "categories": [
+   "soil",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "1f607ae2-b42d-4411-90b8-e9bbac66a554",
+  "name": "Arsenic ion",
+  "categories": [
+   "water",
+   "ground-"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "e60edb16-3c74-415b-9aff-a22a6f49fecb",
+  "name": "Arsenic ion",
+  "categories": [
+   "water",
+   "ground-, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "d70b4182-d633-4178-84c0-8854f5f6594b",
+  "name": "Arsenic ion",
+  "categories": [
+   "water",
+   "ocean"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "8c8ffaa5-84ed-4668-ba7d-80fd0f47013f",
+  "name": "Arsenic ion",
+  "categories": [
+   "water",
+   "surface water"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "e1bd008f-c3c2-47f1-ab60-35e1a842acc0",
+  "name": "Arsenic ion",
+  "categories": [
+   "water",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "e259263c-d1f1-449f-bb9b-73c6d0a32a00",
+  "name": "Carbon dioxide, fossil",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000124-38-9"
+ },
+ {
+  "code": "16eeda8a-1ea2-408e-ab37-2648495058dd",
+  "name": "Carbon dioxide, fossil",
+  "categories": [
+   "air",
+   "lower stratosphere + upper troposphere"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000124-38-9"
+ },
+ {
+  "code": "aa7cac3a-3625-41d4-bc54-33e2cf11ec46",
+  "name": "Carbon dioxide, fossil",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000124-38-9"
+ },
+ {
+  "code": "349b29d1-3e58-4c66-98b9-9d1a076efd2e",
+  "name": "Carbon dioxide, fossil",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000124-38-9"
+ },
+ {
+  "code": "f9749677-9c9f-4678-ab55-c607dfdc2cb9",
+  "name": "Carbon dioxide, fossil",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000124-38-9"
+ },
+ {
+  "code": "81305cda-63f1-4c1a-99c6-2c2568550ec4",
+  "name": "Dinitrogen monoxide",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "010024-97-2"
+ },
+ {
+  "code": "afd6d670-bbb0-4625-9730-04088a5b035e",
+  "name": "Dinitrogen monoxide",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "010024-97-2"
+ },
+ {
+  "code": "20185046-64bb-4c09-a8e7-e8a9e144ca98",
+  "name": "Dinitrogen monoxide",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "010024-97-2"
+ },
+ {
+  "code": "6dc1b46f-ee89-4495-95c4-b8a637bcd6cb",
+  "name": "Dinitrogen monoxide",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "010024-97-2"
+ },
+ {
+  "code": "b7e0bddf-7b8a-43f4-9319-6f4b3d9fa65a",
+  "name": "Hexafluoroethane",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000076-16-4"
+ },
+ {
+  "code": "8f3e0579-d07d-48c9-b41a-fb559728f9c0",
+  "name": "Hexafluoroethane",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000076-16-4"
+ },
+ {
+  "code": "acc39720-dda7-4b3a-80c7-c6394cad4191",
+  "name": "Hexafluoroethane",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000076-16-4"
+ },
+ {
+  "code": "df5dd437-2e12-4af6-8f7a-9c8224857dc5",
+  "name": "Hexafluoroethane",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000076-16-4"
+ },
+ {
+  "code": "938b8b4d-9401-40de-901a-6e545a6f8d2a",
+  "name": "Hydrogen",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "001333-74-0"
+ },
+ {
+  "code": "1c84549b-9317-44b8-ad79-29c587e43bd3",
+  "name": "Hydrogen",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "001333-74-0"
+ },
+ {
+  "code": "b301fa9a-ba60-4eac-8ccc-6ccbdf099b35",
+  "name": "Hydrogen",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "001333-74-0"
+ },
+ {
+  "code": "8e906def-6bd5-4248-ac2b-94e6eedde3c9",
+  "name": "Hydrogen",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "001333-74-0"
+ },
+ {
+  "code": "4d07c245-a030-5399-a74e-aaac30014ec3",
+  "name": "Hydrogen",
+  "categories": [
+   "water",
+   "surface water"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "001333-74-0"
+ },
+ {
+  "code": "ac15536a-92f5-48d7-9560-cba0ca43b526",
+  "name": "Hydrogen fluoride",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007664-39-3"
+ },
+ {
+  "code": "8b7dc667-f04e-492c-a161-80b1482126b0",
+  "name": "Hydrogen fluoride",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007664-39-3"
+ },
+ {
+  "code": "24541c8c-9f11-49ae-9de5-456f238a3f5e",
+  "name": "Hydrogen fluoride",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007664-39-3"
+ },
+ {
+  "code": "257eacb9-96fe-4a3d-961a-f5e6c7823ff0",
+  "name": "Hydrogen fluoride",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007664-39-3"
+ },
+ {
+  "code": "326b94e8-aea0-4bd4-8a50-63bf283882a8",
+  "name": "Isopropanol",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-63-0"
+ },
+ {
+  "code": "ed1aff41-0bfc-48b8-8250-840c0a2f6961",
+  "name": "Isopropanol",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-63-0"
+ },
+ {
+  "code": "479edec6-763c-49fc-83f8-49780f08cf29",
+  "name": "Isopropanol",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-63-0"
+ },
+ {
+  "code": "cbf58f64-9286-406f-8dcb-ef1d81eec980",
+  "name": "Isopropanol",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-63-0"
+ },
+ {
+  "code": "697667f9-d58c-4a64-99e3-30d24d7f91a2",
+  "name": "Isopropanol",
+  "categories": [
+   "water",
+   "ground-"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-63-0"
+ },
+ {
+  "code": "56217fe7-9437-4131-9ae2-e4c4b07b3a64",
+  "name": "Isopropanol",
+  "categories": [
+   "water",
+   "ground-, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-63-0"
+ },
+ {
+  "code": "5b33703d-d6a1-4bde-88e7-3b90b4d45550",
+  "name": "Isopropanol",
+  "categories": [
+   "water",
+   "ocean"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-63-0"
+ },
+ {
+  "code": "caeb15fa-9711-4d37-99a2-d12c7823b8bc",
+  "name": "Isopropanol",
+  "categories": [
+   "water",
+   "surface water"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-63-0"
+ },
+ {
+  "code": "e92a1310-603c-4346-85b8-e4e3192cd75c",
+  "name": "Isopropanol",
+  "categories": [
+   "water",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000067-63-0"
+ },
+ {
+  "code": "f3bd723a-5276-4ae8-9860-b89537351a90",
+  "name": "Methane, fossil",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000074-82-8"
+ },
+ {
+  "code": "70ef743b-3ed5-4a6d-b192-fb6d62378555",
+  "name": "Methane, fossil",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000074-82-8"
+ },
+ {
+  "code": "0795345f-c7ae-410c-ad25-1845784c75f5",
+  "name": "Methane, fossil",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000074-82-8"
+ },
+ {
+  "code": "5f7aad3d-566c-4d0d-ad59-e765f971aa0f",
+  "name": "Methane, fossil",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000074-82-8"
+ },
+ {
+  "code": "34c02ca0-e1ad-45a6-858b-655c55edc2a8",
+  "name": "Nitrogen",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "e5ea66ee-28e2-4e9b-9a25-4414551d821c",
+  "name": "Nitrogen",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "e3f5fd63-7dcb-41f1-9b8a-a48a8d68bc65",
+  "name": "Nitrogen",
+  "categories": [
+   "natural resource",
+   "in air"
+  ],
+  "unit": "kg",
+  "type": "natural resource",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "7ce704ce-2a44-448b-b198-f00bf5928b4b",
+  "name": "Nitrogen",
+  "categories": [
+   "soil",
+   "agricultural"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "994129c0-37ba-464f-a222-a8231715dae2",
+  "name": "Nitrogen",
+  "categories": [
+   "soil",
+   "forestry"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "eadc37a4-8b1e-4dd2-8f4a-39d89d5f39ba",
+  "name": "Nitrogen",
+  "categories": [
+   "soil",
+   "industrial"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "b748f6f1-7061-4243-89c7-3f2d01dcec07",
+  "name": "Nitrogen",
+  "categories": [
+   "soil",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "0c150bb4-fd1a-43f8-b6c9-5dfda8dadb6c",
+  "name": "Nitrogen",
+  "categories": [
+   "water",
+   "ground-"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "42eeb663-34dc-4394-8a07-e4d8e45a7e2d",
+  "name": "Nitrogen",
+  "categories": [
+   "water",
+   "ground-, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "996829cc-2d40-418a-beda-7c50399952f9",
+  "name": "Nitrogen",
+  "categories": [
+   "water",
+   "ocean"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "ae70ca6c-807a-482b-9ddc-e449b4893fe3",
+  "name": "Nitrogen",
+  "categories": [
+   "water",
+   "surface water"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "dcfe0815-6fa3-4e1d-a55e-155b29904f1d",
+  "name": "Nitrogen",
+  "categories": [
+   "water",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007727-37-9"
+ },
+ {
+  "code": "9ec076d9-6d9f-4a0b-9851-730626ed4319",
+  "name": "Oxygen",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007782-44-7"
+ },
+ {
+  "code": "af01e564-f816-4906-bd4f-b7c932f926b9",
+  "name": "Oxygen",
+  "categories": [
+   "natural resource",
+   "in air"
+  ],
+  "unit": "kg",
+  "type": "natural resource",
+  "CAS number": "007782-44-7"
+ },
+ {
+  "code": "6818a8b5-7d75-563f-bce8-8f4088ba5759",
+  "name": "Oxygen",
+  "categories": [
+   "water",
+   "surface water"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007782-44-7"
+ },
+ {
+  "code": "c2fa3c88-ff02-5b95-8f4a-8fa1e5183873",
+  "name": "Oxygen",
+  "categories": [
+   "water",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "007782-44-7"
+ },
+ {
+  "code": "acbae70a-5450-448f-9038-c403cb496e1a",
+  "name": "Sulfur hexafluoride",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "002551-62-4"
+ },
+ {
+  "code": "c7c769bb-89b9-4459-afed-e3acecd39339",
+  "name": "Sulfur hexafluoride",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "002551-62-4"
+ },
+ {
+  "code": "35d1dff5-b535-4628-9826-4a8fce08a1f2",
+  "name": "Sulfur hexafluoride",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "002551-62-4"
+ },
+ {
+  "code": "856c9aa2-c20c-49a8-9417-c71bdb5f17b0",
+  "name": "Sulfur hexafluoride",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "002551-62-4"
+ },
+ {
+  "code": "dc78690a-2b0a-49fc-8272-b811fb25ff6c",
+  "name": "Trifluoromethane",
+  "categories": [
+   "air",
+   "low population density, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000075-46-7"
+ },
+ {
+  "code": "5e2e1740-1bb9-4157-b816-6cb5aa006437",
+  "name": "Trifluoromethane",
+  "categories": [
+   "air",
+   "non-urban air or from high stacks"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000075-46-7"
+ },
+ {
+  "code": "e5ba3517-a93f-422e-9ce2-f1007fcf6c06",
+  "name": "Trifluoromethane",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000075-46-7"
+ },
+ {
+  "code": "8f87dcf1-0177-4d62-bea0-a5dd8647ef8c",
+  "name": "Trifluoromethane",
+  "categories": [
+   "air",
+   "urban air close to ground"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": "000075-46-7"
+ },
+ {
+  "code": "4ec70203-13b0-58cc-b4dd-2fcce8a96732",
+  "name": "VOC, volatile organic compounds",
+  "categories": [
+   "air",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "8ab803d5-39b7-4fcc-9018-896720031143",
+  "name": "VOC, volatile organic compounds",
+  "categories": [
+   "water",
+   "ground-"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "134c89a1-e244-4664-945c-5ebf5f394297",
+  "name": "VOC, volatile organic compounds",
+  "categories": [
+   "water",
+   "ground-, long-term"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "113746e5-66a9-4d8c-b72b-4a99e7fcd052",
+  "name": "VOC, volatile organic compounds",
+  "categories": [
+   "water",
+   "ocean"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "0b94989b-2551-4069-bb11-4f9f48988cad",
+  "name": "VOC, volatile organic compounds",
+  "categories": [
+   "water",
+   "surface water"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ },
+ {
+  "code": "9ba627f4-3a6c-4dd6-8598-4e1639fbd85a",
+  "name": "VOC, volatile organic compounds",
+  "categories": [
+   "water",
+   "unspecified"
+  ],
+  "unit": "kg",
+  "type": "emission",
+  "CAS number": null
+ }
+]
