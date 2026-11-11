@@ -1,0 +1,12 @@
+# LineBuilder runs on the legacy Brightway2 stack (bw2data 3.6, bw2calc 1.8, bw2io 0.8). That stack predates
+# NumPy 2, pandas 3 and peewee 4, so they are held back here; without these caps the setup stops at np.NaN.
+brightway2==2.4.6
+numpy<2
+pandas<2.3
+scipy<1.14
+peewee<4
+Flask>=2.0
+PyYAML>=5.4
+XlsxWriter>=3.0
+# unpacks the ecoinvent .7z download (macOS cannot open .7z files itself)
+py7zr

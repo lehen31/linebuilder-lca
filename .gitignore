@@ -19,3 +19,6 @@ ecoinvent*/
 *.spold
 *ecoSpold*
 datasets/
+
+# installer: built zips and its Python cache
+installer/dist/
